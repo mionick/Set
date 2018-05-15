@@ -37,8 +37,6 @@ public class SetDeck extends CardDeck<SetCard> {
             deck.add(new SetCard(initialValueArray));
         }
 
-        shuffle();
-
     }
 
     public void shuffle() {
@@ -65,45 +63,6 @@ public class SetDeck extends CardDeck<SetCard> {
     // after drawing once, deckindex will equal size
     public boolean isEmpty() {
         return deck.size() >= deckIndex;
-    }
-
-    // Behaviour is undefined if cards of a different cardinality are passed in.
-    public static boolean isSet(SetCard ... cards) {
-        if (cards == null) {
-            throw new IllegalArgumentException("cards cannot be null");
-        }
-
-        // base case is true
-        int dimension = cards.length;
-        if (dimension <= 1) {
-            return true;
-        }
-
-        boolean result = true;
-
-        // Short circuit once we find out this isn't a set in one dimension.
-        for (int i = 0; i < dimension && result; i++) {
-
-            byte intermediateOrResult = 0;
-            for (SetCard card : cards) {
-                intermediateOrResult  |= card.getByteValue(i);
-            }
-
-            // Intermediate result should be true if every card has a different value in this dimension,
-            // or if every card has the same value in this dimension.
-
-            // This equates to the OR result having one 1 bit = all the same
-            // or the OR result having a {dimension} on bits, meaning they were all different.
-
-            int numSet = countSetBits(intermediateOrResult);
-            result = ( numSet == 1 || numSet == dimension);
-
-        }
-
-        return result;
-
-
-
     }
 
 

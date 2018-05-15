@@ -7,8 +7,6 @@ import android.os.Bundle;
 // It should not contain game logic itself, just display logic.
 public class GameActivity extends AppCompatActivity {
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

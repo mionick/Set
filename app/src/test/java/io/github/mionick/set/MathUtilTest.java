@@ -1,6 +1,7 @@
 package io.github.mionick.set;
 
 /**
+ * Unit Tests for Math functions I need.
  * Created by Nick on 5/15/2018.
  */
 import org.junit.Test;
