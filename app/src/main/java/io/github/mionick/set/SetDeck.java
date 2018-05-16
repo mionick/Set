@@ -19,22 +19,24 @@ public class SetDeck extends CardDeck<SetCard> {
 
     private int deckIndex = 0;
 
-    public SetDeck(int dimension) {
+    public SetDeck(int features, int values) {
         // For a 3-ary set deck, 81 cards are possible. No duplicates.
-        int uniqueNum = intPower(dimension, dimension);
+        int uniqueNum = intPower(values, features);
         deck = new ArrayList<>(uniqueNum);
 
         // populate the deck with every unique card
-        // need a dimension * dimension loop
+        // need a features * features loop
 
         for (int j = 0; j < uniqueNum; j++) {
-            // For each dimension we have to set the initial value.
-            int[] initialValueArray = new int[dimension];
-            for (int i  = 1; i <= dimension; i ++) {
-                initialValueArray[i] = j % intPower(dimension, i);
+            // For each features we have to set the initial value.
+            int[] initialValueArray = new int[features];
+            // Here we are essentially converting base 10 into base 3, separating it and adding 1 to each digit
+            // so 6 -> 0020 -> 1131
+            for (int i  = 0; i < features; i ++) {
+                initialValueArray[i] = ((j / intPower(values, i)) % values) + 1;
             }
 
-            deck.add(new SetCard(initialValueArray));
+            deck.add(new SetCard(initialValueArray, values));
         }
 
     }
@@ -62,7 +64,7 @@ public class SetDeck extends CardDeck<SetCard> {
     // size == 1
     // after drawing once, deckindex will equal size
     public boolean isEmpty() {
-        return deck.size() >= deckIndex;
+        return deckIndex >= deck.size();
     }
 
 

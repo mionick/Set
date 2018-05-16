@@ -21,14 +21,13 @@ import static io.github.mionick.Math.MathUtil.countSetBits;
 public class SetGame {
 
     private static final int DEFAULT_BOARD_SIZE = 12;
-    private static final int ARITY = 3; // Just realized the number of cars in a set and the number of properties aren't necessarily the same.
 
-    SetDeck deck = new SetDeck(ARITY);
+    SetDeck deck = new SetDeck(4, 3);
 
     int[] hint;
 
     // 21 is the maximum number of cards that can be on the field without there being a set.
-    private ArrayList<SetCard> currentlyDisplayedCards;
+    private SetCard[] currentlyDisplayedCards;
     private int currentBoardSize;
 
     /**
@@ -36,21 +35,16 @@ public class SetGame {
      */
     public SetGame() {
 
-        // We're not going to rely on add.
-        // Initially add 21 nulls, then rely on set and our own count of how many real cards there are.
-        for (int i = 0; i < 21; i++) {
-            currentlyDisplayedCards.add(null);
-        }
+        currentlyDisplayedCards = new SetCard[21];
 
         currentBoardSize = DEFAULT_BOARD_SIZE;
 
         // initialize the first twelve spots.
         do {
             deck.shuffle();
-            currentlyDisplayedCards = new ArrayList<>(21);
             // Start by Drawing 12 Cards
             for (int i = 0; i < currentBoardSize; i++) {
-                currentlyDisplayedCards.set(i,deck.Draw());
+                currentlyDisplayedCards[i] = deck.Draw();
             }
         }
         // We want to guarantee we start with a set present.
@@ -60,7 +54,7 @@ public class SetGame {
     }
 
     // Getters:
-    public ArrayList<SetCard> getBoard() {
+    public SetCard[] getBoard() {
         return currentlyDisplayedCards;
     }
 
@@ -96,7 +90,7 @@ public class SetGame {
 
         // Need three counters
         for (int i = 0; i < currentBoardSize - 2; i++ ) {
-            for (int j = i +1; i < currentBoardSize -1; j++) {
+            for (int j = i +1; i < currentBoardSize - 1; j++) {
                 for (int k = j+1; k < currentBoardSize; k++) {
                     if (isSet(i, j, k)) {
                         hint = new int[]{i, j, k};
@@ -114,9 +108,9 @@ public class SetGame {
 
     public boolean isSet(int index1, int index2, int index3) {
         return isSet(
-                currentlyDisplayedCards.get(index1),
-                currentlyDisplayedCards.get(index2),
-                currentlyDisplayedCards.get(index3)
+                currentlyDisplayedCards[index1],
+                currentlyDisplayedCards[index2],
+                currentlyDisplayedCards[index3]
         );
     }
 
@@ -143,15 +137,15 @@ public class SetGame {
                 // Set these indices to null.
                 // For each one that's not null, replace one of the chosen indexes.
                 for (int i : chosenCards) {
-                    currentlyDisplayedCards.set(i, null);
+                    currentlyDisplayedCards[i] = null;
                 }
 
                 // TODO: How the hell am I going to animate this.
                 // Need an event for Card moving
                 // Loop through the last three items
                 for (int i  = 1; i < 4; i++) {
-                    if (currentlyDisplayedCards.get(currentBoardSize - i) != null) {
-                        currentlyDisplayedCards.set(chosenCards[i-1], currentlyDisplayedCards.get(currentBoardSize - i));
+                    if (currentlyDisplayedCards[currentBoardSize - i] != null) {
+                        currentlyDisplayedCards[chosenCards[i-1]] = currentlyDisplayedCards[currentBoardSize - i];
                     }
                 }
 
@@ -161,9 +155,9 @@ public class SetGame {
                 // We have to try to add more cards
                 if (!deck.isEmpty()) {
                     // We only draw cards three at a time, so this is safe
-                    currentlyDisplayedCards.set(9, deck.Draw());
-                    currentlyDisplayedCards.set(10, deck.Draw());
-                    currentlyDisplayedCards.set(11, deck.Draw());
+                    currentlyDisplayedCards[9] = deck.Draw();
+                    currentlyDisplayedCards[10] = deck.Draw();
+                    currentlyDisplayedCards[11] = deck.Draw();
                 }
             }
 
@@ -183,9 +177,9 @@ public class SetGame {
             } else {
                 // Add more cards
                 // TODO: Throw cards added event, the view might have to adjust
-                currentlyDisplayedCards.set(currentBoardSize, deck.Draw());
-                currentlyDisplayedCards.set(currentBoardSize + 1, deck.Draw());
-                currentlyDisplayedCards.set(currentBoardSize + 2, deck.Draw());
+                currentlyDisplayedCards[currentBoardSize] = deck.Draw();
+                currentlyDisplayedCards[currentBoardSize + 1] = deck.Draw();
+                currentlyDisplayedCards[currentBoardSize + 2] = deck.Draw();
                 currentBoardSize += 3;
             }
         }
