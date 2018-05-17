@@ -17,7 +17,7 @@ public class SetDeck extends CardDeck<SetCard> {
 
     private final ArrayList<SetCard> deck;
 
-    private int deckIndex = 0;
+    public int deckIndex = 0;
 
     public SetDeck(int features, int values) {
         // For a 3-ary set deck, 81 cards are possible. No duplicates.
@@ -50,7 +50,9 @@ public class SetDeck extends CardDeck<SetCard> {
         if (isEmpty()) {
             return null;
         }
-        return deck.get(deckIndex++);
+        System.out.println("Returning card at index: " + deckIndex);
+        deckIndex ++;
+        return deck.get(deckIndex - 1);
     }
 
     public SetCard DrawAndLoop() {

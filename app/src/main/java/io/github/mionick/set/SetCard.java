@@ -50,15 +50,32 @@ public class SetCard implements Card {
         }
     }
 
-    public byte getByteValue(int dimension) {
-        return this.array[dimension];
+    public byte getByteValue(int feature) {
+        return this.array[feature];
     }
-    public int getIntValue(int dimension) {
-        return log2(this.array[dimension]);
+    public int getIntValue(int feature) {
+        return log2(this.array[feature]);
+    }
+    public int getNumPossibleValues() {
+        return values;
+    }
+    public int getNumFeatures() {
+        return features;
     }
 
-    public int setIntValue(int dimension, int value) {
-        return this.array[dimension] = (byte) (1 << (value -1));
+    public int setIntValue(int feature, int value) {
+        return this.array[feature] = (byte) (1 << (value -1));
+    }
+
+
+    @Override
+    public String toString() {
+        String result = "[";
+        for (byte b : this.array) {
+            result += " " + Integer.toBinaryString(b);
+        }
+
+        return result + " ]";
     }
 
 }

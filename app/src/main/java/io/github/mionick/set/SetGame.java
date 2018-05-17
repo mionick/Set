@@ -24,7 +24,7 @@ public class SetGame {
 
     SetDeck deck = new SetDeck(4, 3);
 
-    int[] hint;
+    ArrayList<Integer> hint = new ArrayList<>();
 
     // 21 is the maximum number of cards that can be on the field without there being a set.
     private SetCard[] currentlyDisplayedCards;
@@ -50,6 +50,7 @@ public class SetGame {
         // We want to guarantee we start with a set present.
         // It's no fun to start with more than 12 cards.
         while (!isSetPresent());
+        EnsurePlayable();
 
     }
 
@@ -87,13 +88,16 @@ public class SetGame {
     public boolean isSetPresent() {
         // Need to check every possible combination of three cards to see if any sets exist.
         // Can short circuit once one is found.
+        hint.clear();
 
         // Need three counters
         for (int i = 0; i < currentBoardSize - 2; i++ ) {
-            for (int j = i +1; i < currentBoardSize - 1; j++) {
+            for (int j = i +1; j < currentBoardSize - 1; j++) {
                 for (int k = j+1; k < currentBoardSize; k++) {
                     if (isSet(i, j, k)) {
-                        hint = new int[]{i, j, k};
+                        hint.add(i);
+                        hint.add(j);
+                        hint.add(k);
                         return true;
                     }
                 }
@@ -101,7 +105,6 @@ public class SetGame {
         }
 
         // If we loop through all cards on the board, there is not set.
-        hint = null;
         return false;
     }
 
@@ -132,32 +135,40 @@ public class SetGame {
                 If the deck is empty, the game is over.
              */
 
-            // If the board size was more than twelve, then we might not need to add new cards
+            // Set these indices to null.
+            // For each one that's not null, replace one of the chosen indexes.
+            for (int i : chosenCards) {
+                currentlyDisplayedCards[i] = null;
+            }
+
+            // If the board size was more than twelve, then we do not need to add new cards
             if (currentBoardSize > DEFAULT_BOARD_SIZE) {
-                // Set these indices to null.
-                // For each one that's not null, replace one of the chosen indexes.
-                for (int i : chosenCards) {
-                    currentlyDisplayedCards[i] = null;
-                }
 
                 // TODO: How the hell am I going to animate this.
                 // Need an event for Card moving
                 // Loop through the last three items
+                int indexToReplace = 0;
                 for (int i  = 1; i < 4; i++) {
                     if (currentlyDisplayedCards[currentBoardSize - i] != null) {
-                        currentlyDisplayedCards[chosenCards[i-1]] = currentlyDisplayedCards[currentBoardSize - i];
+                        currentlyDisplayedCards[chosenCards[indexToReplace]] = currentlyDisplayedCards[currentBoardSize - i];
+                        indexToReplace ++;
                     }
                 }
 
                 currentBoardSize -= 3;
+                // There should be no null values in the playable area at this point.
+                for (int i  = 0; i < currentBoardSize; i++) {
+                    assert(currentlyDisplayedCards[i] != null);
+                }
+
 
             } else {
                 // We have to try to add more cards
                 if (!deck.isEmpty()) {
                     // We only draw cards three at a time, so this is safe
-                    currentlyDisplayedCards[9] = deck.Draw();
-                    currentlyDisplayedCards[10] = deck.Draw();
-                    currentlyDisplayedCards[11] = deck.Draw();
+                    currentlyDisplayedCards[chosenCards[0]] = deck.Draw();
+                    currentlyDisplayedCards[chosenCards[1]] = deck.Draw();
+                    currentlyDisplayedCards[chosenCards[2]] = deck.Draw();
                 }
             }
 
@@ -174,6 +185,9 @@ public class SetGame {
         while (!isSetPresent()) {
             if (deck.isEmpty()) {
                 // TODO: Game is over
+                System.out.println("GAME IS OVER. DECK IS EMPTY, and NO SET.");
+                OnGameOver(0);
+                return;
             } else {
                 // Add more cards
                 // TODO: Throw cards added event, the view might have to adjust
@@ -218,6 +232,22 @@ public class SetGame {
         }
     }
 
+    // Game Over
+    public interface IGameOverHandler {
+        // parameter to be used later for stats like sets/second
+        void OnGameOver(int numberOfSets);
+    }
+
+    private ArrayList<IGameOverHandler> gameOverHandlers = new ArrayList<>();
+    public void AddGameOverHandler(IGameOverHandler handler) {
+        gameOverHandlers.add(handler);
+    }
+    private void OnGameOver(int numSets) {
+        for (IGameOverHandler handler: gameOverHandlers) {
+            handler.OnGameOver(numSets);
+        }
+    }
+
     // =========================== STATIC METHODS ===========================
     // Behaviour is undefined if cards of a different cardinality are passed in.
     public static boolean isSet(SetCard ... cards) {
@@ -226,29 +256,41 @@ public class SetGame {
         }
 
         // base case is true
-        int dimension = cards.length;
-        if (dimension <= 1) {
+        int numberOfCards = cards.length;
+        if (numberOfCards <= 1) {
             return true;
         }
 
         boolean result = true;
 
-        // Short circuit once we find out this isn't a set in one dimension.
-        for (int i = 0; i < dimension && result; i++) {
+        // Short circuit once we find out this isn't a set in one numberOfCards.
+        // Loop through number fo features on each card
+        for (int i = 0; i < 4  && result; i++) {
 
             byte intermediateOrResult = 0;
             for (SetCard card : cards) {
+
+                // If any of the cards are null, this is not a set.
+                // This happens while the AI searches for all possible combinations.
+                if (card == null) {
+                    return false;
+                }
+
+                if (card.getByteValue(i) == 0) {
+                    System.out.println("Issue with card index: " + card);
+                }
                 intermediateOrResult  |= card.getByteValue(i);
             }
 
-            // Intermediate result should be true if every card has a different value in this dimension,
-            // or if every card has the same value in this dimension.
+            // Intermediate result should be true if every card has a different value in this numberOfCards,
+            // or if every card has the same value in this numberOfCards.
 
             // This equates to the OR result having one 1 bit = all the same
-            // or the OR result having a {dimension} on bits, meaning they were all different.
+            // or the OR result having a {numberOfCards} on bits, meaning they were all different.
 
             int numSet = countSetBits(intermediateOrResult);
-            result = ( numSet == 1 || numSet == dimension);
+            result = ( numSet == 1 || numSet == numberOfCards);
+
 
         }
 
