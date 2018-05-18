@@ -16,25 +16,33 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     SetGame game;
     CanvasView customCanvas;
 
+    boolean applicationWasPlacedInBackGround = false;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.applicationWasPlacedInBackGround = true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        customCanvas = (CanvasView) findViewById(R.id.signature_canvas);
+        customCanvas = findViewById(R.id.signature_canvas);
         game = new SetGame();
         customCanvas.setGame(game);
 
         // Used for testing to shorten games
         // game.deck.deckIndex = 81;
 
-        long startime = System.nanoTime();
+        long startTime = System.nanoTime();
 
         game.AddGameOverHandler(numberOfSets -> {
-            long duration = System.nanoTime() - startime;
+            long duration = System.nanoTime() - startTime;
 
             System.out.println(duration);
-            customCanvas.endGame(duration);
+            customCanvas.endGame(duration, numberOfSets, applicationWasPlacedInBackGround);
         });
     }
 
@@ -45,7 +53,4 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         return false;
     }
 
-    public void clearCanvas(View v) {
-        customCanvas.clearCanvas();
-    }
 }

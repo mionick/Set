@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Random;
 
 import static io.github.mionick.Math.MathUtil.countSetBits;
 
@@ -21,22 +22,39 @@ import static io.github.mionick.Math.MathUtil.countSetBits;
 public class SetGame {
 
     private static final int DEFAULT_BOARD_SIZE = 12;
+    private final Random random;
 
-    SetDeck deck = new SetDeck(4, 3);
+    SetDeck deck;
 
     ArrayList<Integer> hint = new ArrayList<>();
 
     // 21 is the maximum number of cards that can be on the field without there being a set.
     private SetCard[] currentlyDisplayedCards;
     private int currentBoardSize;
+    private long seed;
+    private int numberOfSetsFound;
+    private boolean gameIsOver = false;
 
     /**
      * The constructor of the game guarantees that there is a set at the start.
      */
+    // This contrctor is used when we don't care what seed is used.
     public SetGame() {
+        this(System.currentTimeMillis());
+    }
+
+
+    // This can be used to replay a game that a friend played, to try to beat their score.
+    public SetGame(long randomSeed) {
+
+        // If we are passed a seed, everything should use that.
+        this.random = new Random();
+        this.random.setSeed(randomSeed);
+        this.seed = randomSeed;
+
+        deck = new SetDeck(4, 3, random);
 
         currentlyDisplayedCards = new SetCard[21];
-
         currentBoardSize = DEFAULT_BOARD_SIZE;
 
         // initialize the first twelve spots.
@@ -119,6 +137,10 @@ public class SetGame {
 
     public void SelectCards(int ... chosenCards) {
 
+        if (gameIsOver) {
+            return;
+        }
+
         Arrays.sort(chosenCards);
 
         if (isSet(
@@ -134,6 +156,8 @@ public class SetGame {
                 if the deck has cards then add more cards.
                 If the deck is empty, the game is over.
              */
+
+            numberOfSetsFound ++;
 
             // Set these indices to null.
             // For each one that's not null, replace one of the chosen indexes.
@@ -186,7 +210,8 @@ public class SetGame {
             if (deck.isEmpty()) {
                 // TODO: Game is over
                 System.out.println("GAME IS OVER. DECK IS EMPTY, and NO SET.");
-                OnGameOver(0);
+                gameIsOver = true;
+                OnGameOver(numberOfSetsFound);
                 return;
             } else {
                 // Add more cards
@@ -197,6 +222,10 @@ public class SetGame {
                 currentBoardSize += 3;
             }
         }
+    }
+
+    public long getSeed() {
+        return seed;
     }
 
     // ============================ EVENT HOOKS =============================

@@ -4,10 +4,10 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@drawable/ic_geobeardwords3"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:icon="@drawable/ic_geobeardwords3"
         android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
             android:name=".MenuActivity"
@@ -18,10 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GameActivity"
-            android:screenOrientation="landscape"
+        <activity
+            android:name=".GameActivity"
             android:configChanges="orientation|keyboardHidden"
-            ></activity>
+            android:screenOrientation="landscape" />
+        <activity android:name=".RecordActivity"></activity>
     </application>
 
 </manifest>

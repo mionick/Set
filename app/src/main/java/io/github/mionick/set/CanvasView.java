@@ -1,5 +1,6 @@
 package io.github.mionick.set;
 
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -13,17 +14,20 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.time.Duration;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.github.mionick.storage.AppDatabase;
+import io.github.mionick.storage.Record;
+
 public class CanvasView extends View {
 
+    private final AppDatabase appDatabase;
     private int width;
     private int height;
     private int boardOffset;
 
-    private Path mPath;
     Context context;
     private Paint selectedPaint;
     private Paint fontPaint;
@@ -51,9 +55,15 @@ public class CanvasView extends View {
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
         context = c;
+        
+        initializePaints();
+        
+        this.appDatabase = AppDatabase.getAppDatabase(this.context);
 
-        // we set a new Path
-        mPath = new Path();
+
+    }
+
+    private void initializePaints() {
 
         int color1 = Color.RED;
         int color2 = Color.GREEN;
@@ -171,9 +181,7 @@ public class CanvasView extends View {
         fillColors[2][2].setStrokeJoin(Paint.Join.ROUND);
         fillColors[2][2].setStrokeWidth(4f);
         fillColors[2][2].setShader(stripedShader3);
-
     }
-
 
     // override onDraw
     @Override
@@ -305,7 +313,7 @@ public class CanvasView extends View {
                     break;
                 }
                 case 1: {
-                    canvas.drawRoundRect(
+/*                    canvas.drawRoundRect(
                             SHAPE_PADDING_X,
                             startDrawingFrom + shapeHeight*i + SHAPE_PADDING_Y,
                             (cardWidth) - SHAPE_PADDING_X,
@@ -313,6 +321,14 @@ public class CanvasView extends View {
                             SHAPE_PADDING_X,
                             SHAPE_PADDING_Y,
                             paint
+                    );*/
+                    drawSquiggle2(
+                            canvas,
+                            paint,
+                            SHAPE_PADDING_X,
+                            startDrawingFrom + shapeHeight*i + SHAPE_PADDING_Y,
+                            (cardWidth) - SHAPE_PADDING_X * 2,
+                            shapeHeight - SHAPE_PADDING_Y *2
                     );
                     break;
                 }
@@ -353,7 +369,6 @@ public class CanvasView extends View {
 
 
     public void clearCanvas() {
-        mPath.reset();
         invalidate();
     }
 
@@ -460,6 +475,60 @@ public class CanvasView extends View {
         canvas.drawPath(path, paint);
     }
 
+    // This method will draw a sin wave within the rectangle provided.
+    public void drawSquiggle(Canvas canvas, Paint paint, int x, int y, int width, int height) {
+
+        int canvasSaveState = canvas.save();
+        try {
+            canvas.translate(x, y);
+            float thickness = 0.2f * height; // fraction of the height.
+
+            int halfWidth = width / 2;
+            int halfHeight = height / 2;
+
+            Path path = new Path();
+            path.moveTo(0, halfHeight);
+            path.arcTo(0, 0, halfWidth + thickness, halfHeight - 2 * thickness, 0, 180, true);
+            path.arcTo(halfWidth + thickness, halfHeight, width - 2 * thickness, height - 2*thickness, 0, -180, true);
+            path.lineTo(width, halfHeight);
+            path.arcTo(halfWidth - thickness, halfHeight, width, height, 0, -180, true);
+            path.arcTo(2 * thickness, 2 * thickness, halfWidth - thickness, halfHeight, 0, 180, true);
+
+            path.close();
+
+            canvas.drawPath(path, paint);
+        } finally {
+            canvas.restoreToCount(canvasSaveState);
+        }
+    }
+
+    // This method will draw a sin wave within the rectangle provided.
+    public void drawSquiggle2(Canvas canvas, Paint paint, int x, int y, int width, int height) {
+
+        int canvasSaveState = canvas.save();
+        try {
+            canvas.translate(x, y);
+            float thickness = 0.2f * height; // fraction of the height.
+
+            int halfWidth = width / 2;
+            int halfHeight = height / 2;
+
+            Path path = new Path();
+            path.moveTo(0, halfHeight);
+            path.arcTo(0, 0, halfWidth + thickness, height, 180, 180, true);
+            //path.arcTo(halfWidth + thickness, 2*thickness, width - 2 * thickness, height - 2*thickness, 180, -180, true);
+            path.lineTo(width, halfHeight);
+            path.arcTo(halfWidth - thickness, 0, width, height, 0, 180, true);
+            //path.arcTo(2 * thickness, 2 * thickness, halfWidth - thickness, height - 2*thickness, 0, -180, false);
+            path.lineTo(0, halfHeight);
+            path.close();
+
+            canvas.drawPath(path, paint);
+        } finally {
+            canvas.restoreToCount(canvasSaveState);
+        }
+    }
+
     // TO GET STRIPED
     private static Bitmap makeStripeMap(int color1, int color2) {
         Bitmap bm = Bitmap.createBitmap(40, 40, Bitmap.Config.RGB_565);
@@ -467,12 +536,30 @@ public class CanvasView extends View {
         c.drawColor(color2);
         Paint p = new Paint();
         p.setColor(color1);
-        c.drawRect(0, 0, 20, 40, p);
+        c.drawRect(0, 0, 10, 40, p);
+        c.drawRect(30, 0, 40, 40, p);
         return bm;
     }
 
-    public void endGame(long duration) {
+    public void endGame(long duration, int numberOfSets, boolean applicationWasPlacedInBackground) {
         gameOver = true;
         this.duration = duration;
+        
+        saveRecord(duration, numberOfSets, game.getSeed(), applicationWasPlacedInBackground);
+    }
+    
+    // TODO: Controller Logic. Move later.
+    public void saveRecord(long duration, int numberOfSets, long seed, boolean applicationPlacedInBackground) {
+        Record record = new Record();
+        record.setCreateDate(new Date());
+        record.setAppVersionCode(BuildConfig.VERSION_CODE);
+        record.setAppVersionName(BuildConfig.VERSION_NAME);
+        record.setApplicationPlacedInBackground(applicationPlacedInBackground);
+        record.setColors("");
+        record.setSeed(seed);
+        record.setDurationMs(duration / 1000000);
+        record.setNumberOfSets(numberOfSets);
+
+        appDatabase.recordDao().insertAll(record);
     }
 }

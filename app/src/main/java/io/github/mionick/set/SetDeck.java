@@ -3,6 +3,7 @@ package io.github.mionick.set;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Random;
 import java.util.stream.IntStream;
 
 import io.github.mionick.cards.CardDeck;
@@ -16,10 +17,14 @@ import static io.github.mionick.Math.MathUtil.*;
 public class SetDeck extends CardDeck<SetCard> {
 
     private final ArrayList<SetCard> deck;
+    private final Random random;
 
     public int deckIndex = 0;
 
-    public SetDeck(int features, int values) {
+    public SetDeck(int features, int values, Random random) {
+
+        this.random = random;
+
         // For a 3-ary set deck, 81 cards are possible. No duplicates.
         int uniqueNum = intPower(values, features);
         deck = new ArrayList<>(uniqueNum);
@@ -43,7 +48,7 @@ public class SetDeck extends CardDeck<SetCard> {
 
     public void shuffle() {
         deckIndex = 0;
-        Collections.shuffle(deck);
+        Collections.shuffle(deck, random);
     }
 
     public SetCard Draw() {

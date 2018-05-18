@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <TextView
+        android:id="@+id/CreateDateHeader"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.7"
+        android:text="Date"
+        android:layout_width="0dip" />
+    <TextView
+        android:id="@+id/TimeHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Time"
+        />
+    <TextView
+        android:id="@+id/NumberOfSetsHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Sets"
+        />
+    <TextView
+        android:id="@+id/VersionHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Version"
+        />
+    <TextView
+        android:id="@+id/VersionCodeHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Version Code"
+        />
+    <TextView
+        android:id="@+id/ApplicationInBackgroundHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Paused"
+        />
+    <TextView
+        android:id="@+id/SeedHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Seed"
+        />
+    </LinearLayout>
+    <ListView
+        android:id="@+id/RecordList"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+</LinearLayout>
