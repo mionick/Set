@@ -14,6 +14,13 @@ import io.github.mionick.storage.Record;
 
 public class RecordActivity extends AppCompatActivity {
 
+    RecordAdapter adapter;
+    int lastSortIndex = 0;
+    boolean ascending = true;
+    ListView recordView;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,11 +28,10 @@ public class RecordActivity extends AppCompatActivity {
 
         // Populate table
         List<Record> records = AppDatabase.getAppDatabase(this).recordDao().getAll();
-        RecordAdapter adapter = new RecordAdapter(this,
+        adapter = new RecordAdapter(this,
                 R.layout.record_entry, records);
 
-
-        ListView recordView = (ListView) findViewById(R.id.RecordList);
+        recordView = findViewById(R.id.RecordList);
 
         recordView.setAdapter(adapter);
 
@@ -33,5 +39,24 @@ public class RecordActivity extends AppCompatActivity {
         recordView.invalidate();
         System.out.println("There are this many records: " + records.size());
 
+    }
+
+    public void Sort(View view) {
+        int index = 0;
+        if (view.getId() == R.id.CreateDateHeader) {
+            index = 0;
+        } else if (view.getId() == R.id.TimeHeader) {
+            index = 1;
+        } else if (view.getId() == R.id.TimePerSetHeader) {
+            index = 2;
+        }
+
+        ascending = index != lastSortIndex || !ascending;
+
+        lastSortIndex = index;
+
+        adapter.sortRecords(index, ascending);
+
+        recordView.invalidateViews();
     }
 }

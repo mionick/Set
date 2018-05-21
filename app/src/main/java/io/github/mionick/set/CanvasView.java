@@ -1,6 +1,7 @@
 package io.github.mionick.set;
 
 
+import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -11,6 +12,7 @@ import android.graphics.Path;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -49,7 +51,7 @@ public class CanvasView extends View {
     Set<Integer> selectedCards = new HashSet<>(3);
 
     // Card Paints. Indexes are: fill pattern, color
-    Paint[][] fillColors = new Paint[3][3];
+    Paint[][] fillColors = new Paint[4][3];
     private long duration = 0;
 
     public CanvasView(Context c, AttributeSet attrs) {
@@ -152,11 +154,11 @@ public class CanvasView extends View {
         fillColors[1][2].setStrokeWidth(8f);
 
         // STRIPED
-        int backgroundColor = Color.TRANSPARENT;
+        int backgroundColor = getBackgroundColor();
 
-        BitmapShader stripedShader1 = new BitmapShader(makeStripeMap(Color.GRAY, color1), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        BitmapShader stripedShader2 = new BitmapShader(makeStripeMap(Color.GRAY, color2), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        BitmapShader stripedShader3 = new BitmapShader(makeStripeMap(Color.GRAY, color3), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        BitmapShader stripedShader1 = new BitmapShader(makeStripeMap(backgroundColor, color1), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        BitmapShader stripedShader2 = new BitmapShader(makeStripeMap(backgroundColor, color2), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        BitmapShader stripedShader3 = new BitmapShader(makeStripeMap(backgroundColor, color3), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 
         fillColors[2][0] = new Paint();
         fillColors[2][0].setAntiAlias(true);
@@ -181,8 +183,42 @@ public class CanvasView extends View {
         fillColors[2][2].setStrokeJoin(Paint.Join.ROUND);
         fillColors[2][2].setStrokeWidth(4f);
         fillColors[2][2].setShader(stripedShader3);
+
+        // EMPTY - THIN LINE
+        fillColors[3][0] = new Paint();
+        fillColors[3][0].setAntiAlias(true);
+        fillColors[3][0].setColor(color1);
+        fillColors[3][0].setStyle(Paint.Style.STROKE);
+        fillColors[3][0].setStrokeJoin(Paint.Join.ROUND);
+        fillColors[3][0].setStrokeWidth(2f);
+
+        fillColors[3][1] = new Paint();
+        fillColors[3][1].setAntiAlias(true);
+        fillColors[3][1].setColor(color2);
+        fillColors[3][1].setStyle(Paint.Style.STROKE);
+        fillColors[3][1].setStrokeJoin(Paint.Join.ROUND);
+        fillColors[3][1].setStrokeWidth(2f);
+
+        fillColors[3][2] = new Paint();
+        fillColors[3][2].setAntiAlias(true);
+        fillColors[3][2].setColor(color3);
+        fillColors[3][2].setStyle(Paint.Style.STROKE);
+        fillColors[3][2].setStrokeJoin(Paint.Join.ROUND);
+        fillColors[3][2].setStrokeWidth(2f);
     }
 
+    private int getBackgroundColor() {
+        TypedValue a = new TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.windowBackground, a, true);
+        if (a.type >= TypedValue.TYPE_FIRST_COLOR_INT && a.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+            // windowBackground is a color
+            return a.data;
+        } else {
+            // windowBackground is not a color, probably a drawable
+            return Color.BLACK;
+            //Drawable d = context.getResources().getDrawable(a.resourceId);
+        }
+    }
     // override onDraw
     @Override
     protected void onDraw(Canvas canvas) {
@@ -310,6 +346,17 @@ public class CanvasView extends View {
                             paint
 
                     );
+                    if (paintIndex == 2) // if striped, then outline it too
+                    {
+                        canvas.drawOval(
+                                SHAPE_PADDING_X,
+                                startDrawingFrom + shapeHeight*i + SHAPE_PADDING_Y,
+                                (cardWidth) - SHAPE_PADDING_X,
+                                (startDrawingFrom + shapeHeight*(i+1) ) - SHAPE_PADDING_Y,
+                                fillColors[3][colorIndex]
+
+                        );
+                    }
                     break;
                 }
                 case 1: {
@@ -330,6 +377,17 @@ public class CanvasView extends View {
                             (cardWidth) - SHAPE_PADDING_X * 2,
                             shapeHeight - SHAPE_PADDING_Y *2
                     );
+                    if (paintIndex == 2) // if striped, then outline it too
+                    {
+                        drawSquiggle2(
+                                canvas,
+                                fillColors[3][colorIndex],
+                                SHAPE_PADDING_X,
+                                startDrawingFrom + shapeHeight*i + SHAPE_PADDING_Y,
+                                (cardWidth) - SHAPE_PADDING_X * 2,
+                                shapeHeight - SHAPE_PADDING_Y *2
+                        );
+                    }
                     break;
                 }
                 case 2: {
@@ -342,6 +400,18 @@ public class CanvasView extends View {
                             shapeHeight - SHAPE_PADDING_Y *2
 
                     );
+                    if (paintIndex == 2) // if striped, then outline it too
+                    {
+                        drawDiamond(
+                                canvas,
+                                fillColors[3][colorIndex],
+                                SHAPE_PADDING_X,
+                                startDrawingFrom + shapeHeight*i + SHAPE_PADDING_Y,
+                                (cardWidth) - SHAPE_PADDING_X * 2,
+                                shapeHeight - SHAPE_PADDING_Y *2
+
+                        );
+                    }
                     break;
                 }
             }
@@ -533,11 +603,14 @@ public class CanvasView extends View {
     private static Bitmap makeStripeMap(int color1, int color2) {
         Bitmap bm = Bitmap.createBitmap(40, 40, Bitmap.Config.RGB_565);
         Canvas c = new Canvas(bm);
-        c.drawColor(color2);
+        c.drawColor(color1);
         Paint p = new Paint();
-        p.setColor(color1);
-        c.drawRect(0, 0, 10, 40, p);
-        c.drawRect(30, 0, 40, 40, p);
+        p.setColor(color2);
+        c.drawRect(0, 0, 4, 40, p);
+        c.drawRect(16, 0, 24, 40, p);
+        c.drawRect(36, 0, 40, 40, p);
+        //c.drawRect(10,0,30,40, p);
+
         return bm;
     }
 

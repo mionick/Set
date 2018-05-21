@@ -6,7 +6,7 @@ import java.util.Date;
 
 @Entity
 public class Record {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int id;
 
     @ColumnInfo(name = "create_date")
@@ -102,6 +102,11 @@ public class Record {
 
     public void setColors(String colors) {
         this.colors = colors;
+    }
+
+    @Ignore
+    public double getSecondsPerSet(){
+        return getDurationMs()/(double)getNumberOfSets() / 1000.0;
     }
 
 

@@ -10,22 +10,37 @@
     <TextView
         android:id="@+id/CreateDateHeader"
         android:layout_height="wrap_content"
-        android:layout_weight="0.7"
+        android:layout_weight="1.5"
         android:text="Date"
-        android:layout_width="0dip" />
+        android:layout_width="0dip"
+        android:textAlignment="center"
+        android:onClick="Sort"
+        />
     <TextView
         android:id="@+id/TimeHeader"
         android:layout_height="wrap_content"
         android:layout_width="0dip"
         android:layout_weight="0.7"
         android:text="Time"
+        android:textAlignment="center"
+        android:onClick="Sort"
+        />
+    <TextView
+        android:id="@+id/TimePerSetHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Sec / Set"
+        android:textAlignment="center"
+        android:onClick="Sort"
         />
     <TextView
         android:id="@+id/NumberOfSetsHeader"
         android:layout_height="wrap_content"
         android:layout_width="0dip"
-        android:layout_weight="0.7"
+        android:layout_weight="0.5"
         android:text="Sets"
+        android:textAlignment="center"
         />
     <TextView
         android:id="@+id/VersionHeader"
@@ -33,13 +48,15 @@
         android:layout_width="0dip"
         android:layout_weight="0.7"
         android:text="Version"
+        android:textAlignment="center"
         />
     <TextView
         android:id="@+id/VersionCodeHeader"
         android:layout_height="wrap_content"
         android:layout_width="0dip"
         android:layout_weight="0.7"
-        android:text="Version Code"
+        android:text="V.Code"
+        android:textAlignment="center"
         />
     <TextView
         android:id="@+id/ApplicationInBackgroundHeader"
@@ -47,6 +64,7 @@
         android:layout_width="0dip"
         android:layout_weight="0.7"
         android:text="Paused"
+        android:textAlignment="center"
         />
     <TextView
         android:id="@+id/SeedHeader"
@@ -54,8 +72,16 @@
         android:layout_width="0dip"
         android:layout_weight="0.7"
         android:text="Seed"
+        android:textAlignment="center"
+        android:visibility="gone"
         />
     </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.2dp"
+        android:id="@+id/separator"
+        android:visibility="visible"
+        android:background="@android:color/darker_gray"/>
     <ListView
         android:id="@+id/RecordList"
         android:layout_width="fill_parent"
