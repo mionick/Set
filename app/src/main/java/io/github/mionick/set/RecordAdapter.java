@@ -34,7 +34,7 @@ public class RecordAdapter extends ArrayAdapter<Record> {
         this.bestRecordId = Collections.min(records,
                 (record, record2)
                 ->
-                (int) (record.getSecondsPerSet() - record2.getSecondsPerSet()))
+                Double.compare(record.getSecondsPerSet(), record2.getSecondsPerSet()))
                 .getId();
 
     }
@@ -54,6 +54,10 @@ public class RecordAdapter extends ArrayAdapter<Record> {
                 return (int)(record1.getDurationMs() - (record2.getDurationMs()));
             } else if (index == 2) {
                 return Double.compare(record1.getSecondsPerSet(), (record2.getSecondsPerSet()));
+            } else if (index == 7) {
+                return longSafeComparion(record1.getShortestSetMs(), (record2.getShortestSetMs()));
+            } else if (index == 8) {
+                return longSafeComparion(record1.getLongestSetMs(), (record2.getLongestSetMs()));
             } else {
                 return record1.getId() - (record2.getId());
             }
@@ -62,6 +66,20 @@ public class RecordAdapter extends ArrayAdapter<Record> {
             Collections.reverse(records);
         }
 
+    }
+
+    // If an argument is null, it will treat it as the lowest possible value.
+    private int longSafeComparion(Long long1, Long long2) {
+
+        Long long1NotNull = long1;
+        Long long2NotNull = long2;
+        if (long1 == null) {
+            long1NotNull = Long.MIN_VALUE;
+        }
+        if (long2 == null) {
+            long2NotNull = Long.MIN_VALUE;
+        }
+        return Long.compare(long1NotNull, long2NotNull);
     }
 
 
@@ -140,21 +158,37 @@ public class RecordAdapter extends ArrayAdapter<Record> {
         holder.getTimePerSetText().setTextColor(textColor);
         holder.getVersionText().setTextColor(textColor);
         holder.getVersionCodeText().setTextColor(textColor);
+        holder.getShortestSetText().setTextColor(textColor);
+        holder.getLongestSetText().setTextColor(textColor);
 
         long seconds = record.getDurationMs() / 1000;
         String time = String.format("%02d:%02d",seconds / 60, (seconds% 60));
 
-        holder.getApplicationBackgroundText().setText(record.getApplicationPlacedInBackground() + "");
+        DecimalFormat df = new DecimalFormat("#.00");
+        holder.getApplicationBackgroundText().setText(formatMsToSeconds(record.getTimePausedMs()) + "");
+        holder.getLongestSetText().setText(formatMsToSeconds(record.getLongestSetMs()) + "");
+        holder.getShortestSetText().setText(formatMsToSeconds(record.getShortestSetMs()) + "");
         holder.getCreateDateText().setText(record.getCreateDate().toString());
         holder.getSeedText().setText(Long.toString(record.getSeed()));
         holder.getNumberOfSetsText().setText(Integer.toString(record.getNumberOfSets()));
         holder.getDurationText().setText(time);
-        DecimalFormat df = new DecimalFormat("#.00");
         holder.getTimePerSetText().setText(df.format(record.getSecondsPerSet()));
         holder.getVersionText().setText(record.getAppVersionName());
         holder.getVersionCodeText().setText(Long.toString(record.getAppVersionCode()));
 
+        System.out.println( record.getShortestSetMs());
+
+
         return row;
+    }
+
+    private String formatMsToSeconds(Long ms) {
+        if (ms == null) {
+            return "N/A";
+        } else {
+            DecimalFormat df = new DecimalFormat("#.00");
+            return df.format(ms / 1000.0);
+        }
     }
 
     private int getDefaultTextColor() {
@@ -190,6 +224,8 @@ public class RecordAdapter extends ArrayAdapter<Record> {
                 versionText = null,
                 versionCodeText = null,
                 applicationBackgroundText = null,
+                shortestSetText = null,
+                longestSetText = null,
                 seedText = null;
 
         public ViewHolder(View row) {
@@ -238,6 +274,20 @@ public class RecordAdapter extends ArrayAdapter<Record> {
                 this.applicationBackgroundText = (TextView) row.findViewById(R.id.ApplicationInBackground);
             }
             return this.applicationBackgroundText;
+        }
+
+        public TextView getShortestSetText() {
+            if (this.shortestSetText == null) {
+                this.shortestSetText= (TextView) row.findViewById(R.id.ShortestSet);
+            }
+            return this.shortestSetText;
+        }
+
+        public TextView getLongestSetText() {
+            if (this.longestSetText == null) {
+                this.longestSetText = (TextView) row.findViewById(R.id.LongestSet);
+            }
+            return this.longestSetText;
         }
         public TextView getSeedText() {
             if (this.seedText == null) {

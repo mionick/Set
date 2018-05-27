@@ -49,7 +49,13 @@ public class RecordActivity extends AppCompatActivity {
             index = 1;
         } else if (view.getId() == R.id.TimePerSetHeader) {
             index = 2;
+        } else if (view.getId() == R.id.ShortestSetHeader) {
+            index = 7;
+        } else if (view.getId() == R.id.LongestSetHeader) {
+            index = 8;
         }
+
+
 
         ascending = index != lastSortIndex || !ascending;
 

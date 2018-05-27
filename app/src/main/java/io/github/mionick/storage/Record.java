@@ -33,6 +33,18 @@ public class Record {
     @ColumnInfo(name = "colors")
     private String colors;
 
+    @ColumnInfo(name = "longest_set_ms")
+    private Long longestSetMs;
+
+    @ColumnInfo(name = "shortest_set_ms")
+    private Long ShortestSetMs;
+
+    @ColumnInfo(name = "time_paused_ms")
+    private Long timePausedMs;
+
+    public Record() {
+    }
+
     public int getId() {
         return id;
     }
@@ -110,4 +122,34 @@ public class Record {
     }
 
 
+    public Long getLongestSetMs() {
+        return longestSetMs;
+    }
+
+    public void setLongestSetMs(Long longestSetMs) {
+        this.longestSetMs = longestSetMs;
+    }
+
+    public Long getShortestSetMs() {
+        // This is not possible, and I messed up programming originally so I have zeros in my records.
+        if (ShortestSetMs == null || ShortestSetMs == 0) {
+            return null;
+        }
+        return ShortestSetMs;
+    }
+
+    public void setShortestSetMs(Long shortestSetMs) {
+        ShortestSetMs = shortestSetMs;
+    }
+
+    public Long getTimePausedMs() {
+        if (!getApplicationPlacedInBackground()) {
+            return null;
+        }
+        return timePausedMs;
+    }
+
+    public void setTimePausedMs(Long timePausedMs) {
+        this.timePausedMs = timePausedMs;
+    }
 }

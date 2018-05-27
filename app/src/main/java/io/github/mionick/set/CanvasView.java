@@ -25,7 +25,6 @@ import io.github.mionick.storage.Record;
 
 public class CanvasView extends View {
 
-    private final AppDatabase appDatabase;
     private int width;
     private int height;
     private int boardOffset;
@@ -59,9 +58,6 @@ public class CanvasView extends View {
         context = c;
         
         initializePaints();
-        
-        this.appDatabase = AppDatabase.getAppDatabase(this.context);
-
 
     }
 
@@ -614,25 +610,11 @@ public class CanvasView extends View {
         return bm;
     }
 
-    public void endGame(long duration, int numberOfSets, boolean applicationWasPlacedInBackground) {
+    public void endGame(
+            long duration
+    ) {
         gameOver = true;
         this.duration = duration;
-        
-        saveRecord(duration, numberOfSets, game.getSeed(), applicationWasPlacedInBackground);
     }
-    
-    // TODO: Controller Logic. Move later.
-    public void saveRecord(long duration, int numberOfSets, long seed, boolean applicationPlacedInBackground) {
-        Record record = new Record();
-        record.setCreateDate(new Date());
-        record.setAppVersionCode(BuildConfig.VERSION_CODE);
-        record.setAppVersionName(BuildConfig.VERSION_NAME);
-        record.setApplicationPlacedInBackground(applicationPlacedInBackground);
-        record.setColors("");
-        record.setSeed(seed);
-        record.setDurationMs(duration / 1000000);
-        record.setNumberOfSets(numberOfSets);
 
-        appDatabase.recordDao().insertAll(record);
-    }
 }

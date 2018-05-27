@@ -35,12 +35,19 @@ public class SetGame {
     private int numberOfSetsFound;
     private boolean gameIsOver = false;
 
+    // Keeping Track of Stats is the job of the game.
+    private long gameStartTimeNs = System.nanoTime();
+    private long gameStopTimeNs;
+    private long shortestSetNs;
+    private long longestSetNs;
+    private long lastSetNs = gameStartTimeNs;// The first set happens after the game starts.
+
     /**
      * The constructor of the game guarantees that there is a set at the start.
      */
     // This contrctor is used when we don't care what seed is used.
     public SetGame() {
-        this(System.currentTimeMillis());
+        this(System.nanoTime());
     }
 
 
@@ -70,6 +77,9 @@ public class SetGame {
         while (!isSetPresent());
         EnsurePlayable();
 
+        longestSetNs = Long.MIN_VALUE;
+        shortestSetNs = Long.MAX_VALUE;
+        gameStopTimeNs = Long.MAX_VALUE;
     }
 
     // Getters:
@@ -128,13 +138,27 @@ public class SetGame {
 
 
     public boolean isSet(int index1, int index2, int index3) {
-        return isSet(
+        boolean result =  isSet(
                 currentlyDisplayedCards[index1],
                 currentlyDisplayedCards[index2],
                 currentlyDisplayedCards[index3]
         );
+        return result;
     }
 
+    private void updateStats() {
+        long currentNs = System.nanoTime();
+        long timeSinceLast = currentNs - lastSetNs;
+        if (shortestSetNs > timeSinceLast) {
+            shortestSetNs = timeSinceLast;
+            System.out.println( shortestSetNs);
+        }
+        if (longestSetNs < timeSinceLast) {
+            longestSetNs = timeSinceLast;
+        }
+
+        lastSetNs = currentNs;
+    }
     public void SelectCards(int ... chosenCards) {
 
         if (gameIsOver) {
@@ -148,6 +172,7 @@ public class SetGame {
                 chosenCards[1],
                 chosenCards[2]
         )) {
+            updateStats();
             // TODO: Throw Set Found Event
             /*
             remove them and try to add three more.
@@ -228,6 +253,14 @@ public class SetGame {
         return seed;
     }
 
+    public long getShortestSetNs() {
+        return shortestSetNs;
+    }
+
+    public long getLongestSetNs() {
+        return longestSetNs;
+    }
+
     // ============================ EVENT HOOKS =============================
 
 
@@ -272,6 +305,7 @@ public class SetGame {
         gameOverHandlers.add(handler);
     }
     private void OnGameOver(int numSets) {
+        gameStopTimeNs = System.nanoTime();
         for (IGameOverHandler handler: gameOverHandlers) {
             handler.OnGameOver(numSets);
         }

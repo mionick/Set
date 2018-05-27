@@ -66,6 +66,26 @@
         android:text="Paused"
         android:textAlignment="center"
         />
+
+    <TextView
+        android:id="@+id/ShortestSetHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Shortest Set"
+        android:textAlignment="center"
+        android:onClick="Sort"
+        />
+
+    <TextView
+        android:id="@+id/LongestSetHeader"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_weight="0.7"
+        android:text="Longest Set"
+        android:textAlignment="center"
+        android:onClick="Sort"
+        />
     <TextView
         android:id="@+id/SeedHeader"
         android:layout_height="wrap_content"
