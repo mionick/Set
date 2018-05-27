@@ -23,7 +23,10 @@ import java.util.Set;
 import io.github.mionick.storage.AppDatabase;
 import io.github.mionick.storage.Record;
 
-public class CanvasView extends View {
+
+// This class acts as an input device AND a View.
+// Due to that, it has a strange mix of capabilities. All logic must be routed to the controller though.
+public class CanvasView extends View  implements IInputSource {
 
     private int width;
     private int height;
@@ -434,10 +437,7 @@ public class CanvasView extends View {
     }
 
 
-    public void clearCanvas() {
-        invalidate();
-    }
-
+    // INPUT EVENTS
     //override the onTouchEvent
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -469,10 +469,14 @@ public class CanvasView extends View {
 
                     Integer[] selectedCardsArray = new Integer[3];
                     selectedCards.toArray(selectedCardsArray);
-                    game.SelectCards(
-                            selectedCardsArray[0],
-                            selectedCardsArray[1],
-                            selectedCardsArray[2]
+
+                    // This should not be calling this directly.
+                    selectionHandler.SelectSet("Nick",
+                            new IntTriple(
+                                    selectedCardsArray[0],
+                                    selectedCardsArray[1],
+                                    selectedCardsArray[2]
+                            )
                     );
 
                     selectedCards.clear();
@@ -617,4 +621,10 @@ public class CanvasView extends View {
         this.duration = duration;
     }
 
+    @Override
+    public void addSelectionEventHandler(ISelectCards handler) {
+        this.selectionHandler = handler;
+    }
+
+    ISelectCards selectionHandler;
 }

@@ -8,6 +8,8 @@ import android.view.WindowManager;
 
 import java.util.Date;
 
+import io.github.mionick.events.Action;
+import io.github.mionick.events.EventInstance;
 import io.github.mionick.storage.AppDatabase;
 import io.github.mionick.storage.Record;
 
@@ -29,17 +31,25 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     @Override
     protected void onPause() {
         super.onPause();
+
+        // TODO: Remove this statistics logic.
         appPlacedInBackground = true;
         this.timePlacedInBackground = System.nanoTime();
+
+        
+        game.eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.GAME_PAUSED));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // TODO: Remove this statistics logic.
         if (appPlacedInBackground) {
             this.timeInBackground += System.nanoTime() - timePlacedInBackground;
             timePlacedInBackground = 0;
         }
+        game.eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.GAME_RESUMED));
+
     }
 
     @Override
@@ -53,19 +63,54 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         this.appDatabase = AppDatabase.getAppDatabase(getApplicationContext());
 
 
+        long startTime = System.nanoTime();
+
+        game.eventHandlerSet.AddHandler(SetGameEvents.GAME_END,
+                new Action() {
+                    @Override
+                    public void apply(Long timestamp, Object... params) {
+                        long duration = timestamp - startTime;
+
+                        // Tell the view to update
+                        customCanvas.endGame(duration);
+
+                        // Get the number of sets. It should be the only parameter.
+                        Integer numberOfSets = (Integer) params[0]; // Let this fail if it does.
+
+                        // TODO: We now have the complete history of the game (EXCEPT PAUSING)
+                        // Use that for stats.
+                        saveRecord(
+                                duration,
+                                numberOfSets,
+                                game.getSeed(),
+                                appPlacedInBackground,
+                                timeInBackground,
+                                game.getShortestSetNs(),
+                                game.getLongestSetNs()
+                        );
+                    }
+                }
+        );
+
+
+        // Register all input sources.
+        IInputSource[] sources = new IInputSource[]{
+          customCanvas
+        };
+
+        for (IInputSource source : sources) {
+            source.addSelectionEventHandler((sourceName, triple) -> game.SelectCards(sourceName, triple.toArray()));
+        }
+
+        // There might be some set up here in the future, to ensure everyone starts at the same time.
+        // for now though:
+        game.startGame();
+
+
         // Used for testing to shorten games
         // game.deck.deckIndex = 81;
 
-        long startTime = System.nanoTime();
 
-        game.AddGameOverHandler(numberOfSets -> {
-            long duration = System.nanoTime() - startTime;
-
-            System.out.println(duration);
-            customCanvas.endGame(duration);
-            saveRecord(duration, numberOfSets, game.getSeed(), appPlacedInBackground, timeInBackground, game.getShortestSetNs(), game.getLongestSetNs());
-            System.out.println( game.getShortestSetNs());
-        });
     }
 
 

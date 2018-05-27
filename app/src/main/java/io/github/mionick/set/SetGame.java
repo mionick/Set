@@ -2,9 +2,10 @@ package io.github.mionick.set;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Random;
+
+import io.github.mionick.events.EventHandlerSet;
+import io.github.mionick.events.EventInstance;
 
 import static io.github.mionick.Math.MathUtil.countSetBits;
 
@@ -22,8 +23,6 @@ import static io.github.mionick.Math.MathUtil.countSetBits;
 public class SetGame {
 
     private static final int DEFAULT_BOARD_SIZE = 12;
-    private final Random random;
-
     SetDeck deck;
 
     ArrayList<Integer> hint = new ArrayList<>();
@@ -37,17 +36,22 @@ public class SetGame {
 
     // Keeping Track of Stats is the job of the game.
     private long gameStartTimeNs = System.nanoTime();
-    private long gameStopTimeNs;
     private long shortestSetNs;
     private long longestSetNs;
     private long lastSetNs = gameStartTimeNs;// The first set happens after the game starts.
 
+    // Events During the Game
+    // public so others can add event handlers to catch event
+    public EventHandlerSet<SetGameEvents> eventHandlerSet = new EventHandlerSet<>(SetGameEvents.class);
+
+
     /**
      * The constructor of the game guarantees that there is a set at the start.
      */
-    // This contrctor is used when we don't care what seed is used.
+    // This constructor is used when we don't care what seed is used.
     public SetGame() {
         this(System.nanoTime());
+        // Something else must tell us when we can start the game. Until then we should not populate the cards though.
     }
 
 
@@ -55,8 +59,8 @@ public class SetGame {
     public SetGame(long randomSeed) {
 
         // If we are passed a seed, everything should use that.
-        this.random = new Random();
-        this.random.setSeed(randomSeed);
+        Random random = new Random();
+        random.setSeed(randomSeed);
         this.seed = randomSeed;
 
         deck = new SetDeck(4, 3, random);
@@ -64,6 +68,12 @@ public class SetGame {
         currentlyDisplayedCards = new SetCard[21];
         currentBoardSize = DEFAULT_BOARD_SIZE;
 
+        // TODO: Stat tracking should not be here.
+        longestSetNs = Long.MIN_VALUE;
+        shortestSetNs = Long.MAX_VALUE;
+    }
+
+    public void startGame() {
         // initialize the first twelve spots.
         do {
             deck.shuffle();
@@ -77,9 +87,7 @@ public class SetGame {
         while (!isSetPresent());
         EnsurePlayable();
 
-        longestSetNs = Long.MIN_VALUE;
-        shortestSetNs = Long.MAX_VALUE;
-        gameStopTimeNs = Long.MAX_VALUE;
+        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.GAME_START));
     }
 
     // Getters:
@@ -91,28 +99,6 @@ public class SetGame {
         return currentBoardSize;
     }
 
-
-
-    /*
-    Game Loop:
-
-    while (there is a set)
-
-    Wait for selection of three cards
-
-    If they are a set,
-        remove them and try to add three more.
-        Check if there is a set
-        If there is no set,
-            if the deck has cards then add more cards.
-            If the deck is empty, the game is over.
-    If they are not a set,
-        Minus one point.
-
-
-     */
-
-    // TODO: Measure performance. If it's an issue with more than 12 cards, we can get away with only checking the added cards.
     public boolean isSetPresent() {
         // Need to check every possible combination of three cards to see if any sets exist.
         // Can short circuit once one is found.
@@ -133,6 +119,7 @@ public class SetGame {
         }
 
         // If we loop through all cards on the board, there is not set.
+        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.NO_SETS));
         return false;
     }
 
@@ -159,7 +146,7 @@ public class SetGame {
 
         lastSetNs = currentNs;
     }
-    public void SelectCards(int ... chosenCards) {
+    public void SelectCards(String source, int ... chosenCards) {
 
         if (gameIsOver) {
             return;
@@ -172,8 +159,15 @@ public class SetGame {
                 chosenCards[1],
                 chosenCards[2]
         )) {
-            updateStats();
-            // TODO: Throw Set Found Event
+            eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(
+                    SetGameEvents.CORRECT_SET,
+                    source,
+                    new SetCard[]{
+                            currentlyDisplayedCards[chosenCards[0]],
+                            currentlyDisplayedCards[chosenCards[1]],
+                            currentlyDisplayedCards[chosenCards[2]]
+                    }
+                    ));
             /*
             remove them and try to add three more.
                 Check if there is a set
@@ -221,30 +215,38 @@ public class SetGame {
                 }
             }
 
-
             EnsurePlayable();
 
         } else {
-            // TODO: Throw not a set event
+            eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.INCORRECT_SET,
+                    source,
+                    new SetCard[]{
+                            currentlyDisplayedCards[chosenCards[0]],
+                            currentlyDisplayedCards[chosenCards[1]],
+                            currentlyDisplayedCards[chosenCards[2]]
+                    }
+            ));
         }
     }
 
     private void EnsurePlayable() {
+        if (gameIsOver) {
+            return;
+        }
 
         while (!isSetPresent()) {
             if (deck.isEmpty()) {
-                // TODO: Game is over
-                System.out.println("GAME IS OVER. DECK IS EMPTY, and NO SET.");
                 gameIsOver = true;
-                OnGameOver(numberOfSetsFound);
+                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.GAME_END, numberOfSetsFound));
                 return;
             } else {
                 // Add more cards
-                // TODO: Throw cards added event, the view might have to adjust
                 currentlyDisplayedCards[currentBoardSize] = deck.Draw();
                 currentlyDisplayedCards[currentBoardSize + 1] = deck.Draw();
                 currentlyDisplayedCards[currentBoardSize + 2] = deck.Draw();
                 currentBoardSize += 3;
+                // Trigger this event in case the view has to animate something.
+                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.CARDS_ADDED));
             }
         }
     }
@@ -259,56 +261,6 @@ public class SetGame {
 
     public long getLongestSetNs() {
         return longestSetNs;
-    }
-
-    // ============================ EVENT HOOKS =============================
-
-
-    // No Set Available
-    public interface INoSetHandler {
-        void AddingCards(SetCard ... cards);
-    }
-
-    private ArrayList<INoSetHandler> noSetHandlers = new ArrayList<>();
-    public void AddNoSetHander(INoSetHandler handler) {
-        noSetHandlers.add(handler);
-    }
-    private void NoSetAvailable(SetCard ... cards) {
-        for (INoSetHandler noSetHandler: noSetHandlers) {
-            noSetHandler.AddingCards(cards);
-        }
-    }
-
-    // Cards Selected TODO: This event handler should be in the view, then call select cards here
-    public interface ICardsSelectedHandler {
-        void SelectCards(int ... cards);
-    }
-
-    private ArrayList<ICardsSelectedHandler> cardsSelectedHandlers = new ArrayList<>();
-    public void AddCardsSelectedHandler(ICardsSelectedHandler handler) {
-        cardsSelectedHandlers.add(handler);
-    }
-    private void CardSelected(int ... cards) {
-        for (ICardsSelectedHandler cardsSelectedHandler: cardsSelectedHandlers) {
-            cardsSelectedHandler.SelectCards(cards);
-        }
-    }
-
-    // Game Over
-    public interface IGameOverHandler {
-        // parameter to be used later for stats like sets/second
-        void OnGameOver(int numberOfSets);
-    }
-
-    private ArrayList<IGameOverHandler> gameOverHandlers = new ArrayList<>();
-    public void AddGameOverHandler(IGameOverHandler handler) {
-        gameOverHandlers.add(handler);
-    }
-    private void OnGameOver(int numSets) {
-        gameStopTimeNs = System.nanoTime();
-        for (IGameOverHandler handler: gameOverHandlers) {
-            handler.OnGameOver(numSets);
-        }
     }
 
     // =========================== STATIC METHODS ===========================
