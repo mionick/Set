@@ -15,7 +15,7 @@ import io.github.mionick.events.IEventEnum;
     GameEnd <long>
     NoSet <long>
      */
-public enum SetGameEvents implements IEventEnum, Comparable<SetGameEvents> {
+public enum SetGameEvent implements IEventEnum, Comparable<SetGameEvent> {
     GAME_START,
     // number of sets
     GAME_END(Integer.class),
@@ -30,7 +30,7 @@ public enum SetGameEvents implements IEventEnum, Comparable<SetGameEvents> {
 
     private final Type[] params;
 
-    SetGameEvents(Type... params) {
+    SetGameEvent(Type... params) {
         this.params = params;
     }
 

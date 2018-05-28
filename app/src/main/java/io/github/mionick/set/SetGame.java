@@ -34,15 +34,9 @@ public class SetGame {
     private int numberOfSetsFound;
     private boolean gameIsOver = false;
 
-    // Keeping Track of Stats is the job of the game.
-    private long gameStartTimeNs = System.nanoTime();
-    private long shortestSetNs;
-    private long longestSetNs;
-    private long lastSetNs = gameStartTimeNs;// The first set happens after the game starts.
-
     // Events During the Game
     // public so others can add event handlers to catch event
-    public EventHandlerSet<SetGameEvents> eventHandlerSet = new EventHandlerSet<>(SetGameEvents.class);
+    public EventHandlerSet<SetGameEvent> eventHandlerSet = new EventHandlerSet<>(SetGameEvent.class);
 
 
     /**
@@ -68,9 +62,6 @@ public class SetGame {
         currentlyDisplayedCards = new SetCard[21];
         currentBoardSize = DEFAULT_BOARD_SIZE;
 
-        // TODO: Stat tracking should not be here.
-        longestSetNs = Long.MIN_VALUE;
-        shortestSetNs = Long.MAX_VALUE;
     }
 
     public void startGame() {
@@ -87,7 +78,7 @@ public class SetGame {
         while (!isSetPresent());
         EnsurePlayable();
 
-        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.GAME_START));
+        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.GAME_START));
     }
 
     // Getters:
@@ -119,7 +110,7 @@ public class SetGame {
         }
 
         // If we loop through all cards on the board, there is not set.
-        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.NO_SETS));
+        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.NO_SETS));
         return false;
     }
 
@@ -133,19 +124,6 @@ public class SetGame {
         return result;
     }
 
-    private void updateStats() {
-        long currentNs = System.nanoTime();
-        long timeSinceLast = currentNs - lastSetNs;
-        if (shortestSetNs > timeSinceLast) {
-            shortestSetNs = timeSinceLast;
-            System.out.println( shortestSetNs);
-        }
-        if (longestSetNs < timeSinceLast) {
-            longestSetNs = timeSinceLast;
-        }
-
-        lastSetNs = currentNs;
-    }
     public void SelectCards(String source, int ... chosenCards) {
 
         if (gameIsOver) {
@@ -159,8 +137,8 @@ public class SetGame {
                 chosenCards[1],
                 chosenCards[2]
         )) {
-            eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(
-                    SetGameEvents.CORRECT_SET,
+            eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(
+                    SetGameEvent.CORRECT_SET,
                     source,
                     new SetCard[]{
                             currentlyDisplayedCards[chosenCards[0]],
@@ -218,7 +196,7 @@ public class SetGame {
             EnsurePlayable();
 
         } else {
-            eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.INCORRECT_SET,
+            eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.INCORRECT_SET,
                     source,
                     new SetCard[]{
                             currentlyDisplayedCards[chosenCards[0]],
@@ -237,7 +215,7 @@ public class SetGame {
         while (!isSetPresent()) {
             if (deck.isEmpty()) {
                 gameIsOver = true;
-                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.GAME_END, numberOfSetsFound));
+                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.GAME_END, numberOfSetsFound));
                 return;
             } else {
                 // Add more cards
@@ -246,21 +224,13 @@ public class SetGame {
                 currentlyDisplayedCards[currentBoardSize + 2] = deck.Draw();
                 currentBoardSize += 3;
                 // Trigger this event in case the view has to animate something.
-                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvents>(SetGameEvents.CARDS_ADDED));
+                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.CARDS_ADDED));
             }
         }
     }
 
     public long getSeed() {
         return seed;
-    }
-
-    public long getShortestSetNs() {
-        return shortestSetNs;
-    }
-
-    public long getLongestSetNs() {
-        return longestSetNs;
     }
 
     // =========================== STATIC METHODS ===========================

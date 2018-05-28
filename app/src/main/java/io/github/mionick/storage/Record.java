@@ -144,7 +144,7 @@ public class Record {
 
     public Long getTimePausedMs() {
         if (!getApplicationPlacedInBackground()) {
-            return null;
+            return 0L;
         }
         return timePausedMs;
     }
