@@ -1,4 +1,4 @@
-package io.github.mionick.Math;
+package io.github.mionick.math;
 
 /**
  * Created by Nick on 5/15/2018.

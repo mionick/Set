@@ -1,6 +1,5 @@
-package io.github.mionick.set;
+package io.github.mionick.set.android;
 
-import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,7 +7,8 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+
+import io.github.mionick.set.R;
 
 public class MenuActivity extends AppCompatActivity {
 
@@ -40,8 +40,13 @@ public class MenuActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
-    public void StartGame(View view) {
-        Intent startGameIntent = new Intent(this, GameActivity.class);
+    public void StartOnePlayerGame(View view) {
+        Intent startGameIntent = new Intent(this, OnePlayerGameActivity.class);
+        startActivity(startGameIntent);
+    }
+
+    public void StartMultiPlayerGame(View view) {
+        Intent startGameIntent = new Intent(this, MultiPlayerLobbyActivity.class);
         startActivity(startGameIntent);
     }
 

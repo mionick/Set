@@ -1,4 +1,4 @@
-package io.github.mionick.set;
+package io.github.mionick.set.android;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import io.github.mionick.set.R;
 import io.github.mionick.storage.Record;
 
 public class RecordAdapter extends ArrayAdapter<Record> {

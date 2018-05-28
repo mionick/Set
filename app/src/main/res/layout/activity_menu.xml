@@ -5,7 +5,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.github.mionick.set.MenuActivity">
+    tools:context="io.github.mionick.set.android.MenuActivity">
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
@@ -48,14 +48,15 @@
             android:id="@+id/BtnTimedMatch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="StartGame"
+            android:onClick="StartOnePlayerGame"
             android:text="@string/timed_match" />
 
         <Button
             android:id="@+id/BtnMultiplayer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/multiplayer" />
+            android:text="@string/multiplayer"
+            android:onClick="StartMultiPlayerGame"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

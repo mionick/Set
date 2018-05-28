@@ -1,4 +1,4 @@
-package io.github.mionick.set;
+package io.github.mionick.set.android;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +8,12 @@ import android.view.View;
 import java.util.Date;
 
 import io.github.mionick.events.EventInstance;
+import io.github.mionick.set.BuildConfig;
+import io.github.mionick.set.IInputSource;
+import io.github.mionick.set.R;
+import io.github.mionick.set.RecordGenerator;
+import io.github.mionick.set.SetGame;
+import io.github.mionick.set.SetGameEvent;
 import io.github.mionick.storage.AppDatabase;
 import io.github.mionick.storage.Record;
 
@@ -16,7 +22,7 @@ import io.github.mionick.storage.Record;
 // This classes main responsibility is to map the event handlers of each.
 // It should not contain game logic itself, just interaction logic, and statistics.
 //
-public class GameActivity extends AppCompatActivity implements View.OnTouchListener {
+public class OnePlayerGameActivity extends AppCompatActivity implements View.OnTouchListener {
 
     SetGame game;
     CanvasView customCanvas;

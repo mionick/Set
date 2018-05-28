@@ -6,9 +6,12 @@ package io.github.mionick.set;
 
 public class IntTriple {
 
-    private int int1;
-    private int int2;
-    private int int3;
+    private Integer int1 = null;
+    private Integer int2 = null;
+    private Integer int3 = null;
+
+    public IntTriple() {
+    }
 
     public IntTriple(int int1, int int2, int int3) {
 
@@ -21,6 +24,16 @@ public class IntTriple {
         return new int[]{
                 int1, int2, int3
         };
+    }
+
+    public void clear() {
+        int1 = null;
+        int2 = null;
+        int3 = null;
+    }
+
+    public boolean contains(int num) {
+        return int1 == num || int2 == num || int3 == num;
     }
 
     public int getInt1() {

@@ -2,7 +2,7 @@ package io.github.mionick.set;
 
 import io.github.mionick.cards.Card;
 
-import static io.github.mionick.Math.MathUtil.*;
+import static io.github.mionick.math.MathUtil.*;
 
 /**
  * Created by Nick on 5/15/2018.

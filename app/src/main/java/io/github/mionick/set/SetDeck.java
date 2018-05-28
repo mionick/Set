@@ -1,14 +1,12 @@
 package io.github.mionick.set;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import io.github.mionick.cards.CardDeck;
 
-import static io.github.mionick.Math.MathUtil.*;
+import static io.github.mionick.math.MathUtil.*;
 
 /**
  * Created by Nick on 5/15/2018.

@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.github.mionick.set.GameActivity"
+    tools:context="io.github.mionick.set.android.OnePlayerGameActivity"
     android:keepScreenOn="true">
 
-    <io.github.mionick.set.CanvasView
+    <io.github.mionick.set.android.CanvasView
     android:id="@+id/signature_canvas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

@@ -7,7 +7,7 @@ import java.util.Random;
 import io.github.mionick.events.EventHandlerSet;
 import io.github.mionick.events.EventInstance;
 
-import static io.github.mionick.Math.MathUtil.countSetBits;
+import static io.github.mionick.math.MathUtil.countSetBits;
 
 /**
  * This class will contain the main game logic.
@@ -25,11 +25,11 @@ public class SetGame {
     private static final int DEFAULT_BOARD_SIZE = 12;
     SetDeck deck;
 
-    ArrayList<Integer> hint = new ArrayList<>();
+    private IntTriple hint = new IntTriple();
 
     // 21 is the maximum number of cards that can be on the field without there being a set.
-    private SetCard[] currentlyDisplayedCards;
-    private int currentBoardSize;
+    private SetCard[] currentlyDisplayedCards = new SetCard[21];
+    private int currentBoardSize = DEFAULT_BOARD_SIZE;
     private long seed;
     private int numberOfSetsFound;
     private boolean gameIsOver = false;
@@ -58,16 +58,23 @@ public class SetGame {
         this.seed = randomSeed;
 
         deck = new SetDeck(4, 3, random);
+        deck.shuffle();
 
-        currentlyDisplayedCards = new SetCard[21];
-        currentBoardSize = DEFAULT_BOARD_SIZE;
 
+    }
+    // This can be used to replay a game that a friend played, to try to beat their score.
+    public SetGame(SetDeck deck) {
+        this.deck = deck;
+    }
+
+    public IntTriple getHint() {
+        return hint;
     }
 
     public void startGame() {
+
         // initialize the first twelve spots.
         do {
-            deck.shuffle();
             // Start by Drawing 12 Cards
             for (int i = 0; i < currentBoardSize; i++) {
                 currentlyDisplayedCards[i] = deck.Draw();
@@ -78,7 +85,7 @@ public class SetGame {
         while (!isSetPresent());
         EnsurePlayable();
 
-        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.GAME_START));
+        eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.GAME_START, deck));
     }
 
     // Getters:
@@ -100,9 +107,9 @@ public class SetGame {
             for (int j = i +1; j < currentBoardSize - 1; j++) {
                 for (int k = j+1; k < currentBoardSize; k++) {
                     if (isSet(i, j, k)) {
-                        hint.add(i);
-                        hint.add(j);
-                        hint.add(k);
+                        hint.setInt1(i);
+                        hint.setInt2(j);
+                        hint.setInt3(k);
                         return true;
                     }
                 }

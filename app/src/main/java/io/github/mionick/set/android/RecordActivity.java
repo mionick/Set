@@ -1,4 +1,4 @@
-package io.github.mionick.set;
+package io.github.mionick.set.android;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -6,9 +6,9 @@ import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import io.github.mionick.set.R;
 import io.github.mionick.storage.AppDatabase;
 import io.github.mionick.storage.Record;
 
@@ -35,9 +35,8 @@ public class RecordActivity extends AppCompatActivity {
 
         recordView.setAdapter(adapter);
 
-        ((BaseAdapter) recordView.getAdapter()).notifyDataSetChanged();
-        recordView.invalidate();
-        System.out.println("There are this many records: " + records.size());
+        // Default to reverse chronological so newer results are easier to see.
+        Sort(0);
 
     }
 
@@ -54,8 +53,9 @@ public class RecordActivity extends AppCompatActivity {
         } else if (view.getId() == R.id.LongestSetHeader) {
             index = 8;
         }
-
-
+        Sort(index);
+    }
+    public void Sort(int index) {
 
         ascending = index != lastSortIndex || !ascending;
 

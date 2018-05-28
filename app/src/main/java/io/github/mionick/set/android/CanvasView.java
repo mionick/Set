@@ -1,4 +1,4 @@
-package io.github.mionick.set;
+package io.github.mionick.set.android;
 
 
 import android.app.Application;
@@ -20,6 +20,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.github.mionick.set.IInputSource;
+import io.github.mionick.set.ISelectCards;
+import io.github.mionick.set.IntTriple;
+import io.github.mionick.set.R;
+import io.github.mionick.set.SetCard;
+import io.github.mionick.set.SetGame;
 import io.github.mionick.storage.AppDatabase;
 import io.github.mionick.storage.Record;
 
@@ -422,7 +428,7 @@ public class CanvasView extends View  implements IInputSource {
 
         paint =
                 selectedCards.contains(index) ? selectedPaint :
-                        hintOn && game.hint.contains(index) ? hintPaint :
+                        hintOn && game.getHint().contains(index) ? hintPaint :
                                 blackOutline;
 
         canvas.drawRoundRect(

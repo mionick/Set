@@ -16,7 +16,7 @@ import io.github.mionick.events.IEventEnum;
     NoSet <long>
      */
 public enum SetGameEvent implements IEventEnum, Comparable<SetGameEvent> {
-    GAME_START,
+    GAME_START(SetDeck.class),
     // number of sets
     GAME_END(Integer.class),
     NO_SETS,

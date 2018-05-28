@@ -6,7 +6,7 @@ package io.github.mionick.set;
  */
 import org.junit.Test;
 
-import static io.github.mionick.Math.MathUtil.*;
+import static io.github.mionick.math.MathUtil.*;
 import static junit.framework.Assert.assertEquals;
 
 public class MathUtilTest {
