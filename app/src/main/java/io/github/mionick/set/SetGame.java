@@ -23,7 +23,7 @@ import static io.github.mionick.math.MathUtil.countSetBits;
 public class SetGame {
 
     private static final int DEFAULT_BOARD_SIZE = 12;
-    SetDeck deck;
+    public SetDeck deck;
 
     private IntTriple hint = new IntTriple();
 
@@ -131,7 +131,7 @@ public class SetGame {
         return result;
     }
 
-    public void SelectCards(String source, int ... chosenCards) {
+    public void SelectCards(String source, Integer ... chosenCards) {
 
         if (gameIsOver) {
             return;
@@ -151,7 +151,8 @@ public class SetGame {
                             currentlyDisplayedCards[chosenCards[0]],
                             currentlyDisplayedCards[chosenCards[1]],
                             currentlyDisplayedCards[chosenCards[2]]
-                    }
+                    },
+                    chosenCards.clone()
                     ));
             /*
             remove them and try to add three more.
@@ -197,6 +198,16 @@ public class SetGame {
                     currentlyDisplayedCards[chosenCards[0]] = deck.Draw();
                     currentlyDisplayedCards[chosenCards[1]] = deck.Draw();
                     currentlyDisplayedCards[chosenCards[2]] = deck.Draw();
+                    eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.CARDS_ADDED,
+                            // Need to wrap this in an object array otherwise the array of cards is expanded.
+                            new Object[] {
+                                new SetCard[]{
+                                            currentlyDisplayedCards[chosenCards[0]],
+                                            currentlyDisplayedCards[chosenCards[1]],
+                                            currentlyDisplayedCards[chosenCards[2]]
+                                    }
+                            }
+                    ));
                 }
             }
 
@@ -209,7 +220,8 @@ public class SetGame {
                             currentlyDisplayedCards[chosenCards[0]],
                             currentlyDisplayedCards[chosenCards[1]],
                             currentlyDisplayedCards[chosenCards[2]]
-                    }
+                    },
+                    chosenCards.clone()
             ));
         }
     }
@@ -231,7 +243,15 @@ public class SetGame {
                 currentlyDisplayedCards[currentBoardSize + 2] = deck.Draw();
                 currentBoardSize += 3;
                 // Trigger this event in case the view has to animate something.
-                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.CARDS_ADDED));
+                eventHandlerSet.triggerEvent(new EventInstance<SetGameEvent>(SetGameEvent.CARDS_ADDED,
+                        new Object[] {
+                            new SetCard[]{
+                                currentlyDisplayedCards[currentBoardSize-3],
+                                currentlyDisplayedCards[currentBoardSize-2],
+                                currentlyDisplayedCards[currentBoardSize-1],
+                            }
+                }
+                        ));
             }
         }
     }
@@ -290,4 +310,13 @@ public class SetGame {
 
     }
 
+    public void reset() {
+        deck.shuffle();
+        currentlyDisplayedCards = new SetCard[21];
+        currentBoardSize = DEFAULT_BOARD_SIZE;
+        numberOfSetsFound = 0;
+        gameIsOver = false;
+        eventHandlerSet.getHistory().clear();
+        hint = new IntTriple();
+    }
 }

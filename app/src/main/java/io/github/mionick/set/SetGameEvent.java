@@ -20,10 +20,10 @@ public enum SetGameEvent implements IEventEnum, Comparable<SetGameEvent> {
     // number of sets
     GAME_END(Integer.class),
     NO_SETS,
-    CARDS_ADDED,
+    CARDS_ADDED(SetCard[].class),
     // These take a timestamp, an identifier of the player who picked the set, and the cards selected.
-    CORRECT_SET  (String.class, SetCard[].class),
-    INCORRECT_SET(String.class, SetCard[].class),
+    CORRECT_SET  (String.class, SetCard[].class, Integer[].class),
+    INCORRECT_SET(String.class, SetCard[].class, Integer[].class),
     GAME_PAUSED,
     GAME_RESUMED
     ;

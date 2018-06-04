@@ -19,24 +19,44 @@ import android.view.View;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import io.github.mionick.events.EventInstance;
 import io.github.mionick.set.IInputSource;
 import io.github.mionick.set.ISelectCards;
+import io.github.mionick.set.ISetGameView;
 import io.github.mionick.set.IntTriple;
 import io.github.mionick.set.R;
 import io.github.mionick.set.SetCard;
 import io.github.mionick.set.SetGame;
+import io.github.mionick.set.SetGameEvent;
 import io.github.mionick.storage.AppDatabase;
 import io.github.mionick.storage.Record;
 
 
 // This class acts as an input device AND a View.
 // Due to that, it has a strange mix of capabilities. All logic must be routed to the controller though.
-public class CanvasView extends View  implements IInputSource {
+public class CanvasView extends View  implements IInputSource, ISetGameView {
 
     private int width;
     private int height;
     private int boardOffset;
+
+    private SetCard[] emptyArray = new SetCard[] {
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+    };
 
     Context context;
     private Paint selectedPaint;
@@ -49,7 +69,7 @@ public class CanvasView extends View  implements IInputSource {
     private static final int SHAPE_PADDING_X = 40; //pixels;
     private static final int SHAPE_PADDING_Y = 5; //pixels;
 
-    private boolean hintOn = false;
+    private boolean hintOn = true;
 
     private boolean gameOver = false;
 
@@ -61,6 +81,19 @@ public class CanvasView extends View  implements IInputSource {
     // Card Paints. Indexes are: fill pattern, color
     Paint[][] fillColors = new Paint[4][3];
     private long duration = 0;
+    private String hostName = "Host Device";
+    private long gameStartedTime;
+
+    public void setHostName(String name) {
+        if (name == null || name.equals("")) {
+            return;
+        }
+        this.hostName = name;
+    }
+
+    public String getHostName() {
+        return this.hostName;
+    }
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -68,6 +101,7 @@ public class CanvasView extends View  implements IInputSource {
         
         initializePaints();
 
+        hostName = "Phone";
     }
 
     private void initializePaints() {
@@ -262,7 +296,14 @@ public class CanvasView extends View  implements IInputSource {
         int cardWidth = (width/columns);
         int cardHeight = (height/rows);
 
-        SetCard[] cards = game.getBoard();
+        SetCard[] cards;
+        // Game has not started yet.
+        if (System.nanoTime() < gameStartedTime) {
+            cards = emptyArray;
+        } else {
+
+            cards = game.getBoard();
+        }
 
         int saveCountPreCard = canvas.save();
         try {
@@ -477,7 +518,7 @@ public class CanvasView extends View  implements IInputSource {
                     selectedCards.toArray(selectedCardsArray);
 
                     // This should not be calling this directly.
-                    selectionHandler.SelectSet("Nick",
+                    selectionHandler.SelectSet(hostName,
                             new IntTriple(
                                     selectedCardsArray[0],
                                     selectedCardsArray[1],
@@ -633,4 +674,26 @@ public class CanvasView extends View  implements IInputSource {
     }
 
     ISelectCards selectionHandler;
+
+    @Override
+    synchronized public void OnGameEvent(EventInstance event) {
+
+            if (event.getType() == SetGameEvent.GAME_START) {
+                // Players can no longer join
+                gameStartedTime = event.getTimestamp();
+                //in your method, use the Timer Schedule function:
+                new Timer().schedule(
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                invalidate();
+                            }
+                        },
+                        3100
+                );
+            } else if (event.getType() == SetGameEvent.CORRECT_SET) {
+                invalidate();
+            }
+
+    }
 }

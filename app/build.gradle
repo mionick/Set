@@ -63,4 +63,8 @@ dependencies {
     def room_version = "1.1.0" // or, for latest rc, use "1.1.1-rc1"
     implementation "android.arch.persistence.room:runtime:$room_version"
     annotationProcessor "android.arch.persistence.room:compiler:$room_version"
+    implementation 'com.koushikdutta.async:androidasync:2.2.1'
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+
 }

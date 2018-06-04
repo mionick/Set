@@ -8,6 +8,7 @@ import java.util.List;
 public class EventHandlerSet<T extends Enum & IEventEnum> {
 
     HashMap<T, ArrayList<Action>> handlers = new HashMap<>(10);
+    ArrayList<Action> generalHandlers = new ArrayList<>(10);
 
     public EventHandlerSet( Class<T> clazz) {
 
@@ -19,6 +20,9 @@ public class EventHandlerSet<T extends Enum & IEventEnum> {
 
     public void AddHandler(T eventType, Action action) {
         handlers.get(eventType).add(action);
+    }
+    public void AddHandlerForAllEvents(Action action) {
+        generalHandlers.add(action);
     }
 
     // params is expecting to be a list matching the params types of the event
@@ -37,7 +41,18 @@ public class EventHandlerSet<T extends Enum & IEventEnum> {
         eventList.add(event);
 
         for (Action action : handlerList) {
-            action.apply(event.getTimestamp(), event.getParams());
+            try {
+                action.apply(event.getTimestamp(), event.getParams());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        for (Action action : generalHandlers) {
+            try {
+                action.apply(event.getTimestamp(), event);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
     // This is a history of the events this handler has received.

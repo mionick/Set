@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 
 import java.util.Date;
 
@@ -49,6 +50,7 @@ public class OnePlayerGameActivity extends AppCompatActivity implements View.OnT
         game = new SetGame();
         customCanvas.setGame(game);
         this.appDatabase = AppDatabase.getAppDatabase(getApplicationContext());
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // On GAME END
         game.eventHandlerSet.AddHandler(SetGameEvent.GAME_END,
@@ -64,6 +66,14 @@ public class OnePlayerGameActivity extends AppCompatActivity implements View.OnT
         IInputSource[] sources = new IInputSource[]{
           customCanvas
         };
+        game.eventHandlerSet.AddHandlerForAllEvents((timestamp, objects) -> {
+            // the general handler takes object[]
+            // the only object in this array is the event that happened.
+            // It's designed like this because more specific handlers only receive params, not the event itself.
+            EventInstance<SetGameEvent> event = (EventInstance<SetGameEvent>) objects[0];
+            customCanvas.OnGameEvent(event);
+        });
+
 
         // TODO: INPUT
         // Might need a delay input thing, to simulate web delay fr the user of the host device. unfair advantage otherwise.

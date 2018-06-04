@@ -20,8 +20,8 @@ public class IntTriple {
         this.int3 = int3;
     }
 
-    public int[] toArray() {
-        return new int[]{
+    public Integer[] toArray() {
+        return new Integer[]{
                 int1, int2, int3
         };
     }
