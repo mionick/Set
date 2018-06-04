@@ -55,7 +55,6 @@ public class MultiPlayerLobbyActivity extends AppCompatActivity {
         super.onStop();
 
         // Unbind the service if it's bound
-        // TODO: When will the server actually stop?
         if (serviceBound) {
             unbindService(mServiceConnection);
             serviceBound = false;
@@ -83,7 +82,6 @@ public class MultiPlayerLobbyActivity extends AppCompatActivity {
         // On GAME END
         game.eventHandlerSet.AddHandler(SetGameEvent.GAME_END,
                 (timestamp, params) -> {
-                    // TODO: Tell the view to update. This will change with internet things.
                     customCanvas.endGame(RecordGenerator.getStats(game.eventHandlerSet.getHistory()).getDurationMs() * 1000000);
                 }
         );

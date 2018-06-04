@@ -55,7 +55,6 @@ public class OnePlayerGameActivity extends AppCompatActivity implements View.OnT
         // On GAME END
         game.eventHandlerSet.AddHandler(SetGameEvent.GAME_END,
                 (timestamp, params) -> {
-                    // TODO: Tell the view to update. This will change with internet things.
                     Record record = saveRecord( game.getSeed());
                     customCanvas.endGame(record.getDurationMs() * 1000000);
                 }
@@ -75,7 +74,6 @@ public class OnePlayerGameActivity extends AppCompatActivity implements View.OnT
         });
 
 
-        // TODO: INPUT
         // Might need a delay input thing, to simulate web delay fr the user of the host device. unfair advantage otherwise.
         // It would just be an inputsource that wraps another input source and adds lag.
 

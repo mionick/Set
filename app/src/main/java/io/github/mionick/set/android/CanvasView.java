@@ -75,7 +75,6 @@ public class CanvasView extends View  implements IInputSource, ISetGameView {
 
     private SetGame game;
 
-    // TODO: This is more like controller logic.
     Set<Integer> selectedCards = new HashSet<>(3);
 
     // Card Paints. Indexes are: fill pattern, color
