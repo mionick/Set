@@ -69,7 +69,7 @@ public class CanvasView extends View  implements IInputSource, ISetGameView {
     private static final int SHAPE_PADDING_X = 40; //pixels;
     private static final int SHAPE_PADDING_Y = 5; //pixels;
 
-    private boolean hintOn = true;
+    private boolean hintOn = false;
 
     private boolean gameOver = false;
 

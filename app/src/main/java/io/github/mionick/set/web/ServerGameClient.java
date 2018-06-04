@@ -103,13 +103,7 @@ public class ServerGameClient implements IInputSource, ISetGameView {
 
     private ServerGameClient(Context context) {
         this.context = context;
-        server = new AsyncHttpServer();
-        server.get("/api/event/.*", eventApiCallback );
-        server.get("/api/connection/", connectionApiCallback );
-        server.post("/api/user/", registerRequestApiCallback );
-        server.post("/api/input/", postInputApiCallback );
-        server.get("/\\w+\\.\\w+", websiteCallback );
-        server.get("/test", (x, y) -> y.send("Server Running!"));
+        getServer();
         // TODO: Redirect automatically to game.html
         System.out.println( "We are definitely running!");
         game = new SetGame();
@@ -131,7 +125,20 @@ public class ServerGameClient implements IInputSource, ISetGameView {
         server = null;
     }
     public void start() {
+        if (server == null) {
+            getServer();
+        }
         server.listen(port);
+    }
+
+    private void getServer() {
+        server = new AsyncHttpServer();
+        server.get("/api/event/.*", eventApiCallback );
+        server.get("/api/connection/", connectionApiCallback );
+        server.post("/api/user/", registerRequestApiCallback );
+        server.post("/api/input/", postInputApiCallback );
+        server.get("/\\w+\\.\\w+", websiteCallback );
+        server.get("/test", (x, y) -> y.send("Server Running!"));
     }
 
     public void startGame() {
@@ -217,6 +224,8 @@ public class ServerGameClient implements IInputSource, ISetGameView {
                 OnGameEvent(event);
                 onPlayerAdded();
                 Log.v(LOG_TAG, "Added them to the list with false.");
+                response.send(gson.toJson(event));
+                return;
             }
         } catch (JSONException e) {
             response.code(500).send("Not Registered!");
