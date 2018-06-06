@@ -126,21 +126,27 @@ getStripeImageData(ctx, COLORS[2], BACKGROUNDCOLOR).then(
 
 // compare canvas aspect ratio to windows aspect ratio, and set max appropriately.
 if ((canvas.width / canvas.height) > (window.innerWidth / window.innerHeight)) {
-	canvas.style.width = '100%';
+	canvas.style.width = '100vw';
 	canvas.style.height = 'auto';
 } else {
 	canvas.style.width = 'auto';
-	canvas.style.height = '100%';
+	canvas.style.height = '100vh';
 }
 window.addEventListener('resize', function () {
 	if ((canvas.width / canvas.height) > (window.innerWidth / window.innerHeight)) {
-		canvas.style.width = '100%';
+		canvas.style.width = '100vw';
 		canvas.style.height = 'auto';
 	} else {
 		canvas.style.width = 'auto';
-		canvas.style.height = '100%';
+		canvas.style.height = '100vh';
 	}
 }, true);
+
+window.addEventListener('load', function() {
+	this.setTimeout(function() {
+		window.scrollTo(0, 1);
+	}, 0);
+});
 
 
 (async function getIPs() {
@@ -163,6 +169,19 @@ nameElement.addEventListener("keyup", function (event) {
 		sendName();
 	}
 });
+
+if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform) ) {
+	nameElement.addEventListener('focus', function(){
+		// replace CSS font-size with 16px to disable auto zoom on iOS
+		nameElement.style.fontSize = '16px';
+	  });
+	nameElement.addEventListener('blur', function(){
+		// put back the CSS font-size
+		setTimeout(function() {
+			nameElement.style.fontSize = '';
+		})
+	  });
+}
 
 canvas.addEventListener('click', handleInput, false);
 
@@ -274,7 +293,7 @@ async function sendName() {
 				'Content-Type': 'application/json'
 			},
 			//mode: 'no-cors',
-			body: JSON.stringify({ name: nameElement.value, identifier: 'fake', timestamp: getTimeStamp() })
+			body: JSON.stringify({ name: b64EncodeUnicode(nameElement.value), identifier: 'fake', timestamp: getTimeStamp() })
 		}).then(
 			async function (response) {
 				response = await response.json();
@@ -284,12 +303,12 @@ async function sendName() {
 				} else if (response.type == 'JOINED_SUCCESSFULLY') {
 					addEventText('You\'re in!', -1);
 					registrationElement.style.display = 'none';
-					username = nameElement.value;
+					username = b64EncodeUnicode(nameElement.value);
 					mainLoop();
 				} else if (response.type == 'GAME_IN_PROGRESS') {
 					addEventText('You must wait for the next game to start.', 1000);
 					registrationElement.style.display = 'none';
-					username = nameElement.value;
+					username = b64EncodeUnicode(nameElement.value);
 					gameAlreadyStarted = true;
 					mainLoop() 
 				} else {
@@ -363,6 +382,9 @@ EVENT_HANDLERS.INCORRECT_SET = async function (event) {
 	}
 	score[event.params[0]] = score[event.params[0]] - 1 || -1; // The player name
 	updateScore(score);
+	if (username == event.params[0]) {
+		addEventText('-1', 1000);
+	}
 }
 
 
@@ -380,7 +402,7 @@ EVENT_HANDLERS.CORRECT_SET = async function (event) {
 	selectedCards = event.params[2];
 	drawBoard(currentlyDisplayedCards);
 	selectedCards = []; // Whatever was selected before might change, might as well clear it.  
-	addEventText(event.params[0] + ' Found a Set!');
+	addEventText( b64DecodeUnicode(event.params[0]) + ' Found a Set!');
 
 	for (index of event.params[2]) {
 		currentlyDisplayedCards[index] = null;
@@ -396,7 +418,7 @@ EVENT_HANDLERS.CORRECT_SET = async function (event) {
 }
 
 EVENT_HANDLERS.PLAYER_JOINED = async function(event) {
-	addEventText(event.params[0] + ' joined the game.', -1);
+	addEventText( b64DecodeUnicode(event.params[0]) + ' joined the game.', -1);
 }
 
 function updateScore(score) {
@@ -404,7 +426,7 @@ function updateScore(score) {
 	let players = Object.keys(score);
 	let html = '';
 	for (player of players) {
-		html += '<dl><dt>' + player + ': </dt><dd>' + score[player] + '</dd></dl>';
+		html += '<dl><dt>' +  b64DecodeUnicode(player) + ': </dt><dd>' + score[player] + '</dd></dl>';
 	}
 
 	html += '';
@@ -985,6 +1007,24 @@ function maxIndex(array) {
 		},
 		0 // pass zero as the first index to check, otherwise it passes the VALUE of the first element.
 	);
+}
+
+
+function b64EncodeUnicode(str) {
+    // first we use encodeURIComponent to get percent-encoded UTF-8,
+    // then we convert the percent encodings into raw bytes which
+    // can be fed into btoa.
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        function toSolidBytes(match, p1) {
+            return String.fromCharCode('0x' + p1);
+    }));
+}
+
+function b64DecodeUnicode(str) {
+    // Going backwards: from bytestream, to percent-encoding, to original string.
+    return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
 }
 
 // ======================================= BOOK OF WORK ======================================= 

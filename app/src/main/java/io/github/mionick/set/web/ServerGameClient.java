@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -135,7 +136,7 @@ public class ServerGameClient implements IInputSource, ISetGameView {
         server = new AsyncHttpServer();
         server.get("/api/event/.*", eventApiCallback );
         server.get("/api/connection/", connectionApiCallback );
-        server.post("/api/user/", registerRequestApiCallback );
+        server.post("/api/user/", registerRequestApiCallback);
         server.post("/api/input/", postInputApiCallback );
         server.get("/\\w+\\.\\w+", websiteCallback );
         server.get("/test", (x, y) -> y.send("Server Running!"));
@@ -199,6 +200,17 @@ public class ServerGameClient implements IInputSource, ISetGameView {
             //String identifier = theirInput.getString("identifier");
             String name = theirInput.getString("name");
             Log.v(LOG_TAG, name);
+/*
+            try {
+                name =
+                        new String(name.getBytes(), "UTF16") + " " +
+                                new String(name.getBytes(), "UTF8") + " " +
+                                        new String(name.getBytes(), "UTF32");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+*/
+
 
             if (registeredUsers.containsKey(name)) {
                 response.send(gson.toJson(new EventInstance<CommunicationEvent>(CommunicationEvent.NAME_TAKEN)));
@@ -326,7 +338,9 @@ public class ServerGameClient implements IInputSource, ISetGameView {
 
             for (AsyncHttpServerResponse response :
                     this.outstandingRequests) {
-                response.send(gson.toJson(new EventInstance[]{event}));
+                    String responseString = gson.toJson(new EventInstance[]{event});
+                    //response.setContentType("application/json; charset=utf-16");
+                response.send(responseString);
             }
 
             this.outstandingRequests.clear();

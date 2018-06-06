@@ -57,7 +57,8 @@ input {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
-    resize: vertical;
+	resize: vertical;
+	max-width: 80%;
 }
 button {
 	padding: 0.4em;
@@ -71,6 +72,8 @@ button:hover {
 }
 #registration {
 	text-align: center;
+	overflow: hidden;
+
 }
 dt, dd {
 	display: inline;
