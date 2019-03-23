@@ -1,6 +1,5 @@
-
 // Used to replicate past games
-let useMock = false;
+let useMock = true;
 
 // ================================ CONSTANTS ===============================================
 
@@ -28,8 +27,9 @@ let registrationElement = document.getElementById('registration');
 let nameElement = document.getElementById('name');
 let baseUrl = '';//'http://192.168.2.134:1337/'; 
 let COLORS = ['#F00', '#0F0', '#0FF']
+let CARD_BACKGROUNDCOLOR = '#222';
 let BACKGROUNDCOLOR = '#222';
-let PATTERNS = []
+let PATTERNS = [null, null, null];
 
 
 let eventMessageElement = document.getElementById('event-message');
@@ -106,23 +106,27 @@ const NON_GAME_EVENTS = [
 
 
 // ========================================================= SETUP =========================================================
+async function getStripes() {
+	PATTERNS;
 
-getStripeImageData(ctx, COLORS[0], BACKGROUNDCOLOR).then(
-	function (results) {
-		PATTERNS.push(results);
-	}
-);
-getStripeImageData(ctx, COLORS[1], BACKGROUNDCOLOR).then(
-	function (results) {
-		PATTERNS.push(results);
-	}
-);
-getStripeImageData(ctx, COLORS[2], BACKGROUNDCOLOR).then(
-	function (results) {
-		PATTERNS.push(results);
-	}
-);
+	await getStripeImageData(ctx, COLORS[0], CARD_BACKGROUNDCOLOR).then(
+		function (results) {
+			PATTERNS[0] = results;
+		}
+	);
+	await getStripeImageData(ctx, COLORS[1], CARD_BACKGROUNDCOLOR).then(
+		function (results) {
+			PATTERNS[1] = results;
+		}
+	);
+	await getStripeImageData(ctx, COLORS[2], CARD_BACKGROUNDCOLOR).then(
+		function (results) {
+			PATTERNS[2] = results;
+		}
+	);
+}
 
+getStripes();
 
 // compare canvas aspect ratio to windows aspect ratio, and set max appropriately.
 if ((canvas.width / canvas.height) > (window.innerWidth / window.innerHeight)) {
@@ -142,8 +146,8 @@ window.addEventListener('resize', function () {
 	}
 }, true);
 
-window.addEventListener('load', function() {
-	this.setTimeout(function() {
+window.addEventListener('load', function () {
+	this.setTimeout(function () {
 		window.scrollTo(0, 1);
 	}, 0);
 });
@@ -170,20 +174,65 @@ nameElement.addEventListener("keyup", function (event) {
 	}
 });
 
-if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform) ) {
-	nameElement.addEventListener('focus', function(){
+if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)) {
+	nameElement.addEventListener('focus', function () {
 		// replace CSS font-size with 16px to disable auto zoom on iOS
 		nameElement.style.fontSize = '16px';
-	  });
-	nameElement.addEventListener('blur', function(){
+	});
+	nameElement.addEventListener('blur', function () {
 		// put back the CSS font-size
-		setTimeout(function() {
+		setTimeout(function () {
 			nameElement.style.fontSize = '';
 		})
-	  });
+	});
 }
 
 canvas.addEventListener('click', handleInput, false);
+
+document.getElementById('display-options-chk').addEventListener('change', function () {
+	if (this.checked) {
+		// Checkbox is checked..
+		scorecardElement.style.display = 'block';
+		ipAddressElement.style.display = 'block';
+	} else {
+		// Checkbox is not checked..
+		scorecardElement.style.display = 'none';
+		ipAddressElement.style.display = 'none';
+	}
+});
+
+document.getElementById('color-scheme-chk').addEventListener('change', async function () {
+	if (this.checked) {
+		// Checkbox is checked..
+		COLORS = ['#A4F', '#0D0', '#F00']
+		CARD_BACKGROUNDCOLOR = '#EED';
+		await getStripes();
+
+		drawBoard(currentlyDisplayedCards);
+	} else {
+		// Checkbox is not checked..
+		COLORS = ['#F00', '#0F0', '#0FF']
+		CARD_BACKGROUNDCOLOR = '#222';
+		await getStripes();
+
+		drawBoard(currentlyDisplayedCards);
+	}
+});
+
+// document.getElementById('zoom-lock-chk').addEventListener('change', function () {
+// 	if (this.checked) {
+// 		// Checkbox is checked..
+// 		var meta = document.createElement('meta');
+// 		meta.id = "fixed-scroll";
+// 		meta.name = "viewport";
+// 		meta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+// 		document.getElementsByTagName('head')[0].appendChild(meta);
+// 	} else {
+// 		// Checkbox is not checked..
+// 		let elem = document.getElementById("fixed-scroll");
+//  		elem.parentElement.removeChild(elem);
+// 	}
+// });
 
 
 
@@ -310,7 +359,7 @@ async function sendName() {
 					registrationElement.style.display = 'none';
 					username = b64EncodeUnicode(nameElement.value);
 					gameAlreadyStarted = true;
-					mainLoop() 
+					mainLoop()
 				} else {
 					addEventText('Something weird happened...', -1);
 				}
@@ -323,17 +372,17 @@ async function sendName() {
 // Technically this definition should be done beore we try to use it, but we don't use it until after the user has clicked a button, so this is fine.
 
 EVENT_HANDLERS.GAME_START = async function (event) {
-	
+
 	// Clear all past game events, the game ma have been restarted by the host
 	let i;
-	
+
 	// If the game was already started and we're just catching up, then don't modify the events we got.
 	// TODO: This is gross. gameAlreadyStarted is basically a parameter.
 	if (gameAlreadyStarted) {
 		// This will only be true once though, next time we see a new game event, we should flush everything.
 		gameAlreadyStarted = false;
 	} else {
-		for (i = pastEvents.length -1; i > -1; i --) {
+		for (i = pastEvents.length - 1; i > -1; i--) {
 			if (!NON_GAME_EVENTS.includes(pastEvents[i].type)) {
 				pastEvents.splice(i, 1);
 			}
@@ -402,7 +451,7 @@ EVENT_HANDLERS.CORRECT_SET = async function (event) {
 	selectedCards = event.params[2];
 	drawBoard(currentlyDisplayedCards);
 	selectedCards = []; // Whatever was selected before might change, might as well clear it.  
-	addEventText( b64DecodeUnicode(event.params[0]) + ' Found a Set!');
+	addEventText(b64DecodeUnicode(event.params[0]) + ' Found a Set!');
 
 	for (index of event.params[2]) {
 		currentlyDisplayedCards[index] = null;
@@ -417,8 +466,8 @@ EVENT_HANDLERS.CORRECT_SET = async function (event) {
 
 }
 
-EVENT_HANDLERS.PLAYER_JOINED = async function(event) {
-	addEventText( b64DecodeUnicode(event.params[0]) + ' joined the game.', -1);
+EVENT_HANDLERS.PLAYER_JOINED = async function (event) {
+	addEventText(b64DecodeUnicode(event.params[0]) + ' joined the game.', -1);
 }
 
 function updateScore(score) {
@@ -426,7 +475,7 @@ function updateScore(score) {
 	let players = Object.keys(score);
 	let html = '';
 	for (player of players) {
-		html += '<dl><dt>' +  b64DecodeUnicode(player) + ': </dt><dd>' + score[player] + '</dd></dl>';
+		html += '<dl><dt>' + b64DecodeUnicode(player) + ': </dt><dd>' + score[player] + '</dd></dl>';
 	}
 
 	html += '';
@@ -712,7 +761,7 @@ function drawShape(ctx, x, y, w, h, shapeNumber, colorNumber, fillNumber) {
 			ctx.fillStyle = pat;
 			ctx.fill();
 			// For squiggles the stroke does bad things because it's not actually on the squiggle but the rect aound it.
-			if (shapeNumber != SQUIGGLE) { 
+			if (shapeNumber != SQUIGGLE) {
 				ctx.stroke();
 			}
 			break;
@@ -910,18 +959,25 @@ function drawCard(ctx, card, index, cardWidth, cardHeight, selectedCards) {
 	// IF NO CARDS PRESENT
 	if (card == null) {
 		ctx.fillStyle = '#000';
-		drawRoundRect(
-			ctx,
-			CARD_PADDING_X,
-			CARD_PADDING_Y,
-			(cardWidth) - CARD_PADDING_X * 2,
-			cardHeight - CARD_PADDING_Y * 2,
-			CARD_PADDING_X, // radius
-			true,
-			false
-		);
+	} else {
+		ctx.fillStyle = CARD_BACKGROUNDCOLOR;
+	}
+
+	drawRoundRect(
+		ctx,
+		CARD_PADDING_X,
+		CARD_PADDING_Y,
+		(cardWidth) - CARD_PADDING_X * 2,
+		cardHeight - CARD_PADDING_Y * 2,
+		CARD_PADDING_X, // radius
+		true,
+		false
+	);
+
+	if (card == null) {
 		return;
 	}
+
 
 	// All of these should be values from 0-2
 	colorIndex = Math.log2(card.array[0]);
@@ -1011,20 +1067,20 @@ function maxIndex(array) {
 
 
 function b64EncodeUnicode(str) {
-    // first we use encodeURIComponent to get percent-encoded UTF-8,
-    // then we convert the percent encodings into raw bytes which
-    // can be fed into btoa.
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-        function toSolidBytes(match, p1) {
-            return String.fromCharCode('0x' + p1);
-    }));
+	// first we use encodeURIComponent to get percent-encoded UTF-8,
+	// then we convert the percent encodings into raw bytes which
+	// can be fed into btoa.
+	return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+		function toSolidBytes(match, p1) {
+			return String.fromCharCode('0x' + p1);
+		}));
 }
 
 function b64DecodeUnicode(str) {
-    // Going backwards: from bytestream, to percent-encoding, to original string.
-    return decodeURIComponent(atob(str).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+	// Going backwards: from bytestream, to percent-encoding, to original string.
+	return decodeURIComponent(atob(str).split('').map(function (c) {
+		return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+	}).join(''));
 }
 
 // ======================================= BOOK OF WORK ======================================= 
